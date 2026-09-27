@@ -1,0 +1,1 @@
+"""embeddings module for AgentGuard."""
