@@ -1,1 +1,1 @@
-"""__init__ module for AgentGuard."""
+"""AgentGuard API package."""
