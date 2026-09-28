@@ -596,3 +596,157 @@ footer {
     grid-template-columns: 1fr;
   }
 }
+.chaos-config {
+  background: #121d25;
+  border: 1px solid #34434e;
+  border-radius: 9px;
+  padding: 22px;
+  margin-bottom: 24px;
+}
+.chaos-config fieldset {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+.chaos-config legend {
+  font-size: 15px;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+.fault-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.fault-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 15px;
+  border: 1px solid #334653;
+  border-radius: 7px;
+  cursor: pointer;
+  letter-spacing: 0;
+}
+.fault-option input {
+  accent-color: #a2e9d0;
+}
+.fault-option b {
+  font-size: 13px;
+  color: #d5e4ec;
+  display: block;
+}
+.fault-option small {
+  display: block;
+  margin-top: 8px;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.chaos-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  gap: 16px;
+  margin-top: 22px;
+}
+.chaos-fields label {
+  letter-spacing: 0;
+  font-size: 11px;
+}
+.chaos-fields input {
+  display: block;
+  width: 100%;
+  margin-top: 9px;
+  background: #0c151c;
+  color: #cfe3ef;
+  border: 1px solid #3b505f;
+  border-radius: 5px;
+  padding: 10px;
+  font: inherit;
+}
+.saved-campaign {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 24px 0;
+}
+.saved-campaign select {
+  background: #17212b;
+  color: #c4d4df;
+  padding: 10px;
+  border: 1px solid #3d515e;
+  border-radius: 6px;
+  max-width: 100%;
+}
+.report-banner {
+  border-left: 3px solid #99e6cd;
+  padding: 12px 18px;
+  background: #17292a;
+  margin: 20px 0;
+}
+.report-banner p {
+  margin: 7px 0;
+}
+.report-banner small {
+  font-size: 10px;
+  color: #91a9b8;
+}
+.chaos-comparisons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  gap: 18px;
+}
+.chaos-comparison {
+  background: #121c24;
+  border: 1px solid #33434f;
+  border-radius: 8px;
+  padding: 20px;
+  min-width: 0;
+}
+.chaos-comparison .panel-title span {
+  font-size: 11px;
+}
+.chaos-comparison p,
+.chaos-comparison summary {
+  font-size: 11px;
+}
+.paired-runs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+.chaos-run {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.chaos-run strong {
+  font-size: 16px;
+}
+.chaos-run small {
+  font-size: 10px;
+  color: #98acba;
+}
+.chaos-run button {
+  font-size: 10px;
+  padding: 8px;
+}
+.chaos-comparison pre {
+  max-height: 270px;
+  overflow: auto;
+}
+.chaos-lab .metrics button {
+  font-size: 10px;
+  margin-top: 10px;
+  padding: 6px;
+}
+@media (max-width: 700px) {
+  .fault-options,
+  .chaos-comparisons {
+    grid-template-columns: 1fr;
+  }
+  .saved-campaign {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

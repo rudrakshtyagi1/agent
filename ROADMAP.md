@@ -13,7 +13,7 @@ same dataset. Keep a deterministic offline mode and a real model mode.
 
 ## Current state
 
-Phases 1–3 are implemented: the FastAPI/database foundation now
+Phases 1–4 are implemented: the FastAPI/database foundation now
 executes the built-in offline support agent and persists nested spans with
 completed/failed run status. The React trace explorer launches success and
 simulated timeout scenarios and displays timing, inputs, outputs, and errors.
@@ -36,7 +36,11 @@ idempotent persisted evaluations, and a versioned three-case diagnostic suite
 with saved reports and per-metric denominators. Evaluation Studio opens case
 traces and metric evidence. Groundedness is explicitly scoped to the support
 refund template; simulated token usage is unavailable. This fixture dataset is
-not a held-out benchmark. The next milestone is Phase 4 chaos testing.
+not a held-out benchmark. Phase 4 adds a deterministic fault injector, bounded retries, and Chaos Lab.
+Campaigns compare one clean baseline with unprotected and retry-enabled runs
+for timeouts, malformed tool results, missing documents, and irrelevant retrieval.
+Saved reports distinguish recovery, exhaustion, and faults that never fired.
+All faults remain local fixtures; the next milestone is Phase 5 failure intelligence.
 
 ## Build order and acceptance criteria
 

@@ -3,6 +3,7 @@ import { api, demoRun, Run, Span, Trace } from "./services/api";
 
 import EvaluationPanel from "./components/EvaluationPanel";
 import EvaluationStudio from "./pages/EvaluationStudio";
+import ChaosLab from "./pages/ChaosLab";
 
 export default function App() {
   const [page, setPage] = useState("traces");
@@ -78,6 +79,16 @@ export default function App() {
       setBusy(false);
     }
   }
+  async function inspectRun(id: string) {
+    try {
+      const selected = await api<Run>(`/runs/${id}`);
+      await refresh();
+      setPage("traces");
+      await select(selected);
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }
   const shown = runs.filter((r) => filter === "all" || r.status === filter);
   const total = trace?.spans[0]?.duration_ms || 1;
   const start = trace ? Date.parse(trace.spans[0].started_at) : 0;
@@ -111,10 +122,16 @@ export default function App() {
         >
           ◎ &nbsp; Evaluation studio
         </button>
+        <button
+          className={`nav ${page === "chaos" ? "active" : ""}`}
+          onClick={() => setPage("chaos")}
+        >
+          ϟ &nbsp; Chaos lab
+        </button>
         <div className="sidebar-note">
           <span className="dot" /> Local development
           <br />
-          <small>Phase 03 · Evaluation engine</small>
+          <small>Phase 04 · Chaos testing</small>
         </div>
       </aside>
       <main>
@@ -125,20 +142,17 @@ export default function App() {
         <div className="mobile-nav">
           <button onClick={() => setPage("traces")}>Traces</button>
           <button onClick={() => setPage("evaluations")}>Evaluations</button>
+          <button onClick={() => setPage("chaos")}>Chaos lab</button>
         </div>
-        {page === "evaluations" ? (
-          <EvaluationStudio
-            onRun={async (id) => {
-              try {
-                const selected = await api<Run>(`/runs/${id}`);
-                await refresh();
-                setPage("traces");
-                await select(selected);
-              } catch (e) {
-                setError((e as Error).message);
-              }
-            }}
-          />
+        {page !== "traces" && error && (
+          <div className="error" role="alert">
+            {error}
+          </div>
+        )}
+        {page === "chaos" ? (
+          <ChaosLab onRun={inspectRun} />
+        ) : page === "evaluations" ? (
+          <EvaluationStudio onRun={inspectRun} />
         ) : (
           <>
             <section className="heading">

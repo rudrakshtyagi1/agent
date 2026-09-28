@@ -137,3 +137,54 @@ export interface SuiteReport {
     execution_status: string;
   })[];
 }
+
+export interface ChaosRun {
+  run_id: string;
+  status: string;
+  error: string | null;
+  latency_ms: number;
+  task_passed: boolean | null;
+  injected_count: number;
+  retry_count: number;
+  attempts: Record<string, number>;
+  fault_events: {
+    span_id: string;
+    kind: string;
+    target: string;
+    attempt: number;
+    injected: boolean;
+    draw: number;
+  }[];
+}
+export interface ChaosReport {
+  id: string;
+  engine_version: string;
+  runtime_version: string;
+  config_sha256: string;
+  config: {
+    seed: number;
+    probability: number;
+    fail_first_attempts: number;
+    retry: { max_attempts: number; backoff_ms: number };
+    faults: string[];
+    order_id: string;
+  };
+  baseline: ChaosRun;
+  comparisons: {
+    fault: string;
+    unprotected: ChaosRun;
+    protected: ChaosRun;
+    recovered: boolean | null;
+    retry_rescued_task: boolean;
+    latency_delta_ms: number;
+  }[];
+  summary: {
+    fault_types: number;
+    injected_cases: number;
+    not_injected_cases: number;
+    recovered_cases: number;
+    recovery_rate: number | null;
+    retry_rescued_cases: number;
+  };
+  limitations: string;
+}

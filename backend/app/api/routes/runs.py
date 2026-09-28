@@ -17,6 +17,7 @@ from app.db.repositories.agent_repo import AgentRepository
 from app.db.repositories.run_repo import RunRepository
 from app.db.repositories.test_case_repo import TestCaseRepository
 from app.db.models.run import RunModel
+from app.schemas.chaos import ExecutionOptions
 from app.schemas.run import RunCreate, RunResponse, RunStatus
 
 logger = logging.getLogger(__name__)
@@ -144,12 +145,12 @@ async def get_run(
 
 
 @router.post("/{run_id}/execute", response_model=RunResponse)
-async def execute_run_endpoint(run_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+async def execute_run_endpoint(run_id: uuid.UUID, options: ExecutionOptions | None = None, db: AsyncSession = Depends(get_db)):
     """Execute a queued run; return after its status and trace are committed."""
     from app.runtime.executor import execute_run
     run = await RunRepository(db).get_by_id(run_id)
     if run is None:
         raise HTTPException(404, "Run not found")
-    run = await execute_run(db, run)
+    run = await execute_run(db, run, options)
     await db.commit()
     return _model_to_response(run)

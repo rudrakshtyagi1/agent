@@ -15,6 +15,8 @@ from app.db.models.agent import AgentModel
 from app.db.models.run import RunModel
 from app.db.models.test_case import TestCaseModel
 from app.schemas.trace import SpanType
+from app.schemas.chaos import ExecutionOptions
+from app.chaos.engine import ENGINE_VERSION
 from app.evaluation.contracts import snapshot_case
 from app.target_agents import support
 from app.tracing.tracer import Tracer
@@ -24,7 +26,8 @@ from app.tracing.trace_store import save_trace
 EXECUTION_TIMEOUT_SECONDS = 10
 
 
-async def execute_run(db: AsyncSession, run: RunModel) -> RunModel:
+async def execute_run(db: AsyncSession, run: RunModel, options: ExecutionOptions | None = None) -> RunModel:
+    options = options or ExecutionOptions()
     agent = await db.get(AgentModel, run.agent_id)
     case = await db.get(TestCaseModel, run.test_case_id)
     if agent is None or case is None:
@@ -47,9 +50,12 @@ async def execute_run(db: AsyncSession, run: RunModel) -> RunModel:
     try:
         with tracer.span("support_agent", SpanType.PLANNER,
                          metadata={"agent_version": run.agent_version, "test_case_id": str(case.id),
-                                   "test_case_snapshot": snapshot_case(case)}) as root:
+                                   "test_case_snapshot": snapshot_case(case),
+                                   "execution_options": options.model_dump(),
+                                   "chaos_engine_version": ENGINE_VERSION,
+                                   "runtime_version": support.RUNTIME_VERSION}) as root:
             async with asyncio.timeout(EXECUTION_TIMEOUT_SECONDS):
-                root.output = await support.execute(case.input, tracer)
+                root.output = await support.execute(case.input, tracer, options)
     except Exception as exc:
         run.status = "failed"
         run.error = f"{type(exc).__name__}: {exc}"

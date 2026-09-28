@@ -1,9 +1,9 @@
 # AgentGuard
 
 AgentGuard is a testing and observability platform for multi-step AI agents.
-Phase 3 includes an executable offline support agent, persisted nested traces,
-a React trace explorer, and a versioned evaluation engine and suite dashboard.
-Chaos campaigns, diagnosis, and live monitoring follow in later phases; see [ROADMAP.md](ROADMAP.md).
+Phase 4 includes an executable offline support agent, persisted nested traces,
+a React trace explorer, a versioned evaluation engine, and paired chaos campaigns
+with bounded retries. Failure diagnosis and live monitoring follow in later phases; see [ROADMAP.md](ROADMAP.md).
 
 ## Run locally
 
@@ -162,3 +162,104 @@ Evaluator: `agentguard-rules/1.0.0`. Reports store both versions and the dataset
 content hash. Keep the repository's `evals/` directory when running the backend;
 the new `evaluation_suites` table is created additively at startup. Existing
 runs and traces do not need to be deleted or migrated.
+
+## Phase 4: chaos testing and recovery
+
+Open **Chaos lab** and run a campaign. The default runs one clean baseline and
+four pairs of faulted runs: one attempt without retries versus up to two attempts
+with retries. Every pair uses the same agent, test case, expectations, seed,
+and fault configuration. The original baseline and every run are inspectable.
+Saved campaign reports survive server restart.
+
+| Fault | Injection boundary | Agent behavior |
+| --- | --- | --- |
+| `tool_timeout` | Order lookup raises a synthetic timeout | Retry within budget; otherwise fail. |
+| `malformed_tool` | Order age becomes an invalid string | Validate the response, retry; never use it to answer. |
+| `missing_documents` | Retrieval returns an empty list | Require recognized policy evidence, retry or fail. |
+| `irrelevant_retrieval` | Shipping policy replaces refund policy | Reject irrelevant evidence, retry or fail. |
+
+Faults operate only on the built-in offline fixtures. They do not interrupt real
+services, call external APIs, or exercise production infrastructure. These
+failures are synthetic; they test agent handling and instrumentation.
+
+### Reproducible decisions and bounded retries
+
+- `seed` is an unsigned 32-bit integer. SHA-256 of the engine version, seed,
+  fault kind, target, and attempt determines a probability draw. There is no
+  shared RNG state; the same config produces the same decisions even across
+  concurrent runs. Timings are not deterministic.
+- `probability` ranges from 0 to 1. `fail_first_attempts` (1–3) controls the
+  fault-eligible window; each eligible attempt gets its own deterministic draw.
+  Later attempts are clean. A probability of 1 guarantees eligible injections;
+  a probability of 0 injects nothing.
+- `retry.max_attempts` (1–3) includes the first attempt, and applies per target.
+  `retry.backoff_ms` (0–200) is multiplied by the failed attempt number. At most
+  two backoff sleeps occur per step. Only timeouts and explicitly recoverable
+  tool/retrieval validation errors are retried. Cancellation and unexpected
+  programming errors propagate.
+- The overall 10-second execution deadline includes retries and backoff. Traces
+  retain attempted steps on deadline expiry. Campaigns are synchronous and
+  transactional, with at most nine runs; no durable background worker is added.
+
+The default four transient faults each fail without retries and recover with
+two attempts. Set `fail_first_attempts: 3` and `max_attempts: 2` to demonstrate
+exhaustion. Set `probability: 0` for a no-injection control: recovery becomes
+**N/A**, not 100%.
+
+Recovery means labeled task success after at least one fired fault in the retry
+run. The denominator excludes runs where no fault fired. The report separately
+counts tasks rescued by retries (failed without retries, passed with retries).
+This small diagnostic sample is not a statistical production reliability claim.
+
+Root span metadata stores the complete execution configuration, chaos engine
+version, and support runtime version. Target spans record their attempt number;
+`fault_decision` spans record the draw and whether a fault fired;
+`retry_scheduled` spans record the reason and backoff. Malformed payloads and
+retrieved documents remain visible on failed attempts. A retry schedule event
+shows intent; target attempt spans confirm whether the retry actually began.
+
+### Chaos API and CLI
+
+- `GET /api/v1/chaos/faults`: available fault kinds and their targets.
+- `POST /api/v1/chaos/campaigns`: run and persist a paired campaign.
+- `GET /api/v1/chaos/campaigns`: saved campaign summaries.
+- `GET /api/v1/chaos/campaigns/{id}`: complete report with run IDs and evidence.
+
+Example campaign request:
+
+```json
+{
+  "seed": 42,
+  "probability": 1,
+  "fail_first_attempts": 1,
+  "faults": ["tool_timeout", "malformed_tool", "missing_documents", "irrelevant_retrieval"],
+  "retry": {"max_attempts": 2, "backoff_ms": 20},
+  "order_id": "ORD-1001"
+}
+```
+
+For an existing queued run, pass execution options to
+`POST /api/v1/runs/{id}/execute`:
+
+```json
+{
+  "fault": {"kind": "tool_timeout", "seed": 42, "probability": 1, "fail_first_attempts": 1},
+  "retry": {"max_attempts": 2, "backoff_ms": 20}
+}
+```
+
+No body (or `{}`) preserves the original one-attempt, no-injection behavior.
+The old test input `scenario: "tool_timeout"` remains an unconditional simulated
+failure on every attempt, independent of the new fault injector. Campaigns use
+`scenario: "success"` so all faults come from the recorded configuration.
+
+```sh
+python scripts/run_chaos_campaign.py > /tmp/agentguard-chaos.json
+python scripts/run_chaos_campaign.py --fault-attempts 3 --max-attempts 2
+python scripts/run_chaos_campaign.py --probability 0
+```
+
+`chaos_campaigns` is an additive table created at startup; existing data stays
+intact. The adapter identifier remains `builtin://support` version `1.0.0` for
+compatibility; traces additionally pin `support-runtime/2.0.0` to distinguish the
+new retry and evidence-validation behavior from historical executions.
