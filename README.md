@@ -2,6 +2,22 @@
 
 AgentGuard is a comprehensive evaluation, reliability, chaos testing, and observability platform for AI agents.
 
+Work in progress: see [the implementation roadmap](ROADMAP.md) for implemented
+capabilities, planned milestones, and the placement demo.
+
+## Tracing demo
+
+After installing `backend/requirements.txt`, run from the repository root:
+
+```sh
+PYTHONPATH=backend python3 scripts/demo_trace.py
+make test
+```
+
+The offline demo prints nested retrieval/tool spans and a simulated tool timeout
+as JSON. No model API key is needed. Trace storage and the dashboard are not yet
+connected to this tracer.
+
 ## Project Structure
 
 ```
