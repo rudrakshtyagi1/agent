@@ -13,14 +13,23 @@ same dataset. Keep a deterministic offline mode and a real model mode.
 
 ## Current state
 
-The repository contains a FastAPI/database foundation and agent, test-case,
-and run routes. Run creation records a queued run; execution is not wired up.
-Most advanced modules and the React dashboard are placeholders.
+Phase 1 and Phase 2 are implemented: the FastAPI/database foundation now
+executes the built-in offline support agent and persists nested spans with
+completed/failed run status. The React trace explorer launches success and
+simulated timeout scenarios and displays timing, inputs, outputs, and errors.
 
-The first tracing implementation now supports nested spans, task-local
-ancestry for concurrent asyncio work, duration measurement, propagated errors,
-cancellation capture, and independent JSON-exportable snapshots. It does not
-yet persist spans, implement OpenTelemetry interoperability, or redact data.
+The tracer supports concurrent asyncio ancestry, duration measurement,
+propagated errors, cancellation capture, and independent JSON snapshots.
+API tests cover persistence across engine/application recreation, concurrent
+execution protection, validation failures, and trace ownership checks.
+
+Execution is request-scoped and bounded to 10 seconds. Status and spans commit
+atomically; the intermediate running state is not exposed to other requests.
+Process termination rolls back the transaction, leaving the original queued
+run for an explicit retry. There is no durable background worker, live stream,
+external trace-ingestion endpoint, OpenTelemetry export, or automatic redaction.
+The demo uses fixture data and a template model; real LLM/RAG integrations and
+evaluation are future work. Do not use the unauthenticated local API publicly.
 
 ## Build order and acceptance criteria
 

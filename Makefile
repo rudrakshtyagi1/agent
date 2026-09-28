@@ -13,10 +13,10 @@ install:
 	$(PYTHON) -m pip install -r backend/requirements.txt
 
 test:
-	PYTHONPATH=backend pytest backend/tests -v
+	PYTHONPATH=backend $(PYTHON) -m pytest backend/tests -v
 
 run:
-	PYTHONPATH=backend uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 --reload
+	PYTHONPATH=backend $(PYTHON) -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 --reload
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +

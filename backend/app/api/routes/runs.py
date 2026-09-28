@@ -1,7 +1,6 @@
 """Run CRUD routes.
 
-Phase 1: POST /runs creates a QUEUED run record only.
-Agent execution is deferred to later phases.
+POST /runs creates a queued run; POST /runs/{id}/execute runs its adapter.
 """
 
 from __future__ import annotations
@@ -43,7 +42,7 @@ def _model_to_response(run: RunModel) -> RunResponse:
     "",
     response_model=RunResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Create a run record (Phase 1: QUEUED only)",
+    summary="Create a queued run",
 )
 async def create_run(
     payload: RunCreate,
@@ -56,7 +55,7 @@ async def create_run(
     Snapshots the agent_version from the Agent record to preserve historical
     attribution — the version stored on the Run is immutable after creation.
 
-    Phase 1 does not execute the agent; execution belongs to a later phase.
+    Execute the queued record through POST /runs/{run_id}/execute.
     """
     agent_repo = AgentRepository(db)
     tc_repo = TestCaseRepository(db)
@@ -105,8 +104,8 @@ async def create_run(
     summary="List runs",
 )
 async def list_runs(
-    offset: int = 0,
-    limit: int = 100,
+    offset: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=1, le=500),
     agent_id: Optional[uuid.UUID] = Query(default=None),
     test_case_id: Optional[uuid.UUID] = Query(default=None),
     run_status: Optional[str] = Query(default=None, alias="status"),
@@ -141,4 +140,16 @@ async def get_run(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Run '{run_id}' not found.",
         )
+    return _model_to_response(run)
+
+
+@router.post("/{run_id}/execute", response_model=RunResponse)
+async def execute_run_endpoint(run_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    """Execute a queued run; return after its status and trace are committed."""
+    from app.runtime.executor import execute_run
+    run = await RunRepository(db).get_by_id(run_id)
+    if run is None:
+        raise HTTPException(404, "Run not found")
+    run = await execute_run(db, run)
+    await db.commit()
     return _model_to_response(run)

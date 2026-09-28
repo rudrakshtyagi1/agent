@@ -55,6 +55,6 @@ class RunRepository(BaseRepository[RunModel]):
             stmt = stmt.where(RunModel.test_case_id == test_case_id)
         if status is not None:
             stmt = stmt.where(RunModel.status == status)
-        stmt = stmt.offset(offset).limit(limit)
+        stmt = stmt.order_by(RunModel.created_at.desc(), RunModel.id).offset(offset).limit(limit)
         result = await self.session.execute(stmt)
         return list(result.scalars().all())

@@ -46,8 +46,8 @@ class RunBase(BaseModel):
 class RunCreate(RunBase):
     """Request body for creating a new run record.
 
-    At Phase 1, POST /runs only persists a QUEUED record.
-    Actual agent execution is deferred to a later phase.
+    POST /runs persists a QUEUED record.
+    POST /runs/{run_id}/execute executes the registered adapter.
     """
 
     pass
