@@ -1,9 +1,10 @@
 # AgentGuard
 
 AgentGuard is a testing and observability platform for multi-step AI agents.
-Phase 4 includes an executable offline support agent, persisted nested traces,
+Phase 5 includes an executable offline support agent, persisted nested traces,
 a React trace explorer, a versioned evaluation engine, and paired chaos campaigns
-with bounded retries. Failure diagnosis and live monitoring follow in later phases; see [ROADMAP.md](ROADMAP.md).
+with bounded retries, plus evidence-based failure diagnosis and symptom grouping.
+Regression gates and live monitoring follow in later phases; see [ROADMAP.md](ROADMAP.md).
 
 ## Run locally
 
@@ -263,3 +264,88 @@ python scripts/run_chaos_campaign.py --probability 0
 intact. The adapter identifier remains `builtin://support` version `1.0.0` for
 compatibility; traces additionally pin `support-runtime/2.0.0` to distinguish the
 new retry and evidence-validation behavior from historical executions.
+
+## Phase 5: failure intelligence
+
+Open **Failure lab → Analyze recent runs** to diagnose the latest 20 finished
+runs, including completed runs with failed checks and runs that recovered from
+an intermediate failure. Select a symptom group and run to inspect the report;
+**Failure evidence** and **Recovery evidence** open the exact trace span.
+Individual traces also have a **Diagnose run** action.
+
+The rule engine identifies tool timeouts, invalid order-tool payloads, missing
+retrieval documents, irrelevant document IDs, input validation errors, and
+execution deadlines. It also incorporates failed reference-answer, citation,
+groundedness, tool-selection, retrieval-recall, and latency checks. It does not
+call an LLM or claim access to external service internals.
+
+### Evidence and causal limits
+
+- Repeated copies of the same exception in ancestor spans are treated as
+  propagation, not independent causes. Error timing uses span completion time.
+- The primary finding favors unresolved observed failures over downstream checks
+  and recovered incidents. This is an evidence ordering, not proof of causality
+  among concurrent branches.
+- Recovery requires a later successful attempt with the same step name, parent,
+  and input. A recovered step does not imply that the entire task succeeded;
+  report outcome and task verdict are separate.
+- A reference mismatch means the output differs from the frozen reference. It
+  does not prove the reference is correct. Groundedness inherits Phase 3's narrow
+  support-template scope.
+- Failure without a localized span produces **unknown**. A clean trace produces
+  **no failure observed**, not a guarantee of correctness. Legacy traces can be
+  diagnosed even when their evaluation snapshot is unavailable.
+- A recorded injected fault is associated only with its failed parent step.
+  Injection provenance is separate from classification. The classifier never
+  uses a configured fault kind to guess what failed.
+- Explanations separate observed conditions from possible causes and provide
+  concrete next checks. No invented confidence probabilities are displayed.
+
+Findings retain observed errors/payloads, span IDs, evaluation IDs, recovery
+spans, and the diagnosis version (`agentguard-diagnosis/1.0.0`). Diagnoses are
+saved once per run and version, including clean results, and repeated/concurrent
+requests return the same report. A diagnosis error does not rewrite execution
+status. Changed diagnosis rules require a version bump; reports are immutable.
+
+### Similar failures
+
+Failure Lab groups the **most recent 500 failure records** by category, subtype,
+and component, reporting the window explicitly. These are exact symptom
+signatures, not embedding clusters and not evidence that all grouped runs have
+the same root cause. Group occurrences count findings, which may include multiple
+independent scopes in one run. Recovered and unresolved findings remain visible.
+
+### Blinded fixture audit
+
+Click **Run diagnosis audit** to create a nine-run chaos campaign (four failed
+runs, four recoveries, and a clean baseline), classify it, and save the audit.
+Before each audit prediction, injector-decision spans and root execution/fault
+configuration are removed. Expected labels are compared only after diagnosis.
+The full diagnoses retain injection provenance for developer inspection.
+
+The audit checks both symptom subtype and run outcome. **9/9** on these fixtures
+is a regression check, not held-out accuracy or a production reliability claim.
+Tests additionally cover unknown evidence, incorrect references, propagated
+errors, deadlines, wrong configured fault labels, and an error recurring after
+an earlier recovery.
+
+```sh
+python scripts/run_diagnosis_audit.py > /tmp/agentguard-diagnosis-audit.json
+```
+
+The script exits nonzero if any fixture prediction differs from its label.
+
+### Diagnosis API
+
+- `POST /api/v1/runs/{id}/diagnose`: evaluate when possible, then diagnose and save.
+- `GET /api/v1/runs/{id}/diagnosis`: saved current-version report, or `null` if not analyzed.
+- `POST /api/v1/failures/analyze-recent?limit=20`: analyze 1–50 most recent finished runs.
+- `GET /api/v1/failures/groups`: bounded symptom groups and related run IDs.
+- `POST /api/v1/failures/benchmark`: create and save the blinded fixture audit.
+- `GET /api/v1/failures/benchmarks/latest`: last saved audit, or `null`.
+
+`run_diagnoses` and `diagnosis_benchmarks` are additive tables created at startup;
+findings use the existing `failures` table. No existing records need deletion.
+The local service remains unauthenticated and the entire analysis request uses
+a database transaction. Durable workers, production monitoring, and general
+LLM-based investigation are outside this phase.

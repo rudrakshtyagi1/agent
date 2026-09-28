@@ -13,7 +13,7 @@ same dataset. Keep a deterministic offline mode and a real model mode.
 
 ## Current state
 
-Phases 1–4 are implemented: the FastAPI/database foundation now
+Phases 1–5 are implemented: the FastAPI/database foundation now
 executes the built-in offline support agent and persists nested spans with
 completed/failed run status. The React trace explorer launches success and
 simulated timeout scenarios and displays timing, inputs, outputs, and errors.
@@ -40,7 +40,14 @@ not a held-out benchmark. Phase 4 adds a deterministic fault injector, bounded r
 Campaigns compare one clean baseline with unprotected and retry-enabled runs
 for timeouts, malformed tool results, missing documents, and irrelevant retrieval.
 Saved reports distinguish recovery, exhaustion, and faults that never fired.
-All faults remain local fixtures; the next milestone is Phase 5 failure intelligence.
+All faults remain local fixtures.
+
+Phase 5 adds versioned rule-based diagnosis, explicit unknown causes, separate
+recovery and task outcomes, evidence navigation, and exact symptom grouping.
+Failure Lab can analyze recent runs and run a blinded nine-fixture audit that
+removes injector labels before classification. The next milestone is Phase 6
+regression comparison and release gates. General LLM investigation and
+embedding-based clustering are not implemented or claimed.
 
 ## Build order and acceptance criteria
 

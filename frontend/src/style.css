@@ -750,3 +750,152 @@ footer {
     flex-direction: column;
   }
 }
+.diagnosis-panel {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid #33404b;
+}
+.diagnosis-outcome {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  background: #182b30;
+  padding: 15px;
+  border-radius: 6px;
+  text-transform: capitalize;
+  font-size: 13px;
+  margin: 15px 0;
+}
+.finding {
+  border: 1px solid #354854;
+  border-radius: 8px;
+  padding: 18px;
+  margin-top: 15px;
+  background: #121c24;
+}
+.finding h3 {
+  font-size: 15px;
+  margin: 0;
+}
+.finding .panel-title span {
+  font-size: 11px;
+}
+.finding-tags {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.finding-tags span {
+  font-size: 10px;
+  border: 1px solid #3b505c;
+  padding: 5px 8px;
+  border-radius: 4px;
+  color: #9fc4d2;
+}
+.finding p,
+.finding li {
+  font-size: 12px;
+  line-height: 1.7;
+}
+.finding h4 {
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+.finding summary {
+  font-size: 11px;
+  color: #a1bbc8;
+  cursor: pointer;
+}
+.finding pre {
+  max-height: 280px;
+  overflow: auto;
+}
+.notice {
+  background: #253127;
+  padding: 12px;
+  border-radius: 5px;
+  color: #c4d8b8 !important;
+  font-size: 12px;
+}
+.failure-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+.failure-group {
+  background: #14202a;
+  border: 1px solid #354854;
+  border-radius: 7px;
+  padding: 18px;
+  min-width: 0;
+}
+.failure-group summary {
+  cursor: pointer;
+  list-style: none;
+}
+.failure-group summary b {
+  display: block;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.failure-group summary span {
+  display: block;
+  font-size: 11px;
+  color: #91adbb;
+  margin-top: 8px;
+}
+.failure-group p {
+  font-size: 11px;
+}
+.selected-diagnosis {
+  border: 1px solid #33434f;
+  border-radius: 9px;
+  padding: 22px;
+  margin-top: 26px;
+}
+.audit-summary {
+  margin: 24px 0;
+  padding: 18px;
+  border: 1px solid #3c6357;
+  border-radius: 7px;
+  background: #162921;
+}
+.audit-summary summary {
+  cursor: pointer;
+  font-size: 14px;
+}
+.audit-cases {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+.audit-cases button {
+  text-align: left;
+}
+.audit-cases small {
+  display: block;
+  font-size: 10px;
+  color: #9db2bf;
+  line-height: 1.7;
+  margin-top: 8px;
+}
+.report-details li {
+  line-height: 1.8;
+}
+@media (min-width: 701px) {
+  .run-list {
+    max-height: 950px;
+    overflow: auto;
+  }
+}
+@media (max-width: 700px) {
+  .failure-groups {
+    grid-template-columns: 1fr;
+  }
+  .selected-diagnosis {
+    padding: 12px;
+  }
+  .mobile-nav {
+    flex-wrap: wrap;
+  }
+}

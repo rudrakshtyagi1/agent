@@ -4,6 +4,8 @@ import { api, demoRun, Run, Span, Trace } from "./services/api";
 import EvaluationPanel from "./components/EvaluationPanel";
 import EvaluationStudio from "./pages/EvaluationStudio";
 import ChaosLab from "./pages/ChaosLab";
+import FailureLab from "./pages/FailureLab";
+import DiagnosisPanel from "./components/DiagnosisPanel";
 
 export default function App() {
   const [page, setPage] = useState("traces");
@@ -22,7 +24,7 @@ export default function App() {
   useEffect(() => {
     refresh().catch((e) => setError(e.message));
   }, []);
-  async function select(next: Run) {
+  async function select(next: Run, evidenceId?: string) {
     const ticket = ++selection.current;
     setRun(next);
     setTrace(null);
@@ -38,13 +40,15 @@ export default function App() {
       if (ticket !== selection.current) return;
       setTrace(result);
       setSpan(
-        result.spans.find(
-          (s) =>
-            s.error &&
-            !result.spans.some(
-              (child) => child.parent_span_id === s.id && child.error,
-            ),
-        ) ?? result.spans[0],
+        result.spans.find((s) => s.id === evidenceId) ??
+          result.spans.find(
+            (s) =>
+              s.error &&
+              !result.spans.some(
+                (child) => child.parent_span_id === s.id && child.error,
+              ),
+          ) ??
+          result.spans[0],
       );
     } catch (e) {
       if (ticket === selection.current) setError((e as Error).message);
@@ -79,12 +83,12 @@ export default function App() {
       setBusy(false);
     }
   }
-  async function inspectRun(id: string) {
+  async function inspectRun(id: string, evidenceId?: string) {
     try {
       const selected = await api<Run>(`/runs/${id}`);
       await refresh();
       setPage("traces");
-      await select(selected);
+      await select(selected, evidenceId);
     } catch (e) {
       setError((e as Error).message);
     }
@@ -128,10 +132,16 @@ export default function App() {
         >
           ϟ &nbsp; Chaos lab
         </button>
+        <button
+          className={`nav ${page === "failures" ? "active" : ""}`}
+          onClick={() => setPage("failures")}
+        >
+          ⌕ &nbsp; Failure lab
+        </button>
         <div className="sidebar-note">
           <span className="dot" /> Local development
           <br />
-          <small>Phase 04 · Chaos testing</small>
+          <small>Phase 05 · Failure intelligence</small>
         </div>
       </aside>
       <main>
@@ -143,13 +153,16 @@ export default function App() {
           <button onClick={() => setPage("traces")}>Traces</button>
           <button onClick={() => setPage("evaluations")}>Evaluations</button>
           <button onClick={() => setPage("chaos")}>Chaos lab</button>
+          <button onClick={() => setPage("failures")}>Failure lab</button>
         </div>
         {page !== "traces" && error && (
           <div className="error" role="alert">
             {error}
           </div>
         )}
-        {page === "chaos" ? (
+        {page === "failures" ? (
+          <FailureLab onRun={inspectRun} />
+        ) : page === "chaos" ? (
           <ChaosLab onRun={inspectRun} />
         ) : page === "evaluations" ? (
           <EvaluationStudio onRun={inspectRun} />
@@ -333,6 +346,21 @@ export default function App() {
                       const selected = trace.spans.find((s) => s.id === id);
                       if (selected) {
                         setSpan(selected);
+                        document
+                          .getElementById("span-details")
+                          ?.scrollIntoView({ behavior: "smooth" });
+                      }
+                    }}
+                  />
+                )}
+                {trace && run && (
+                  <DiagnosisPanel
+                    key={`diagnosis-${run.id}`}
+                    runId={run.id}
+                    onEvidence={(id) => {
+                      const match = trace.spans.find((s) => s.id === id);
+                      if (match) {
+                        setSpan(match);
                         document
                           .getElementById("span-details")
                           ?.scrollIntoView({ behavior: "smooth" });

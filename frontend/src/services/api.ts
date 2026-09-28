@@ -188,3 +188,64 @@ export interface ChaosReport {
   };
   limitations: string;
 }
+
+export interface Finding {
+  id: string;
+  category: string;
+  subtype: string;
+  component: string;
+  title: string;
+  severity: string;
+  status: string;
+  role: string;
+  evidence_level: string;
+  cause_status: string;
+  explanation: string;
+  next_steps: string[];
+  evidence_span_ids: string[];
+  recovery_span_ids: string[];
+  evaluation_ids: string[];
+  observations: unknown[];
+  injection_evidence: { span_id: string; kind: string }[];
+  fingerprint: string;
+}
+export interface Diagnosis {
+  run_id: string;
+  diagnosis_version: string;
+  outcome: string;
+  task_passed: boolean | null;
+  primary_finding_id: string | null;
+  findings: Finding[];
+  evaluation_note: string | null;
+  limitations: string[];
+}
+export interface FailureGroups {
+  window: string;
+  records_scanned: number;
+  groups: {
+    fingerprint: string;
+    category: string;
+    subtype: string;
+    component: string;
+    title: string;
+    occurrences: number;
+    recovered: number;
+    runs: { run_id: string; failure_id: string; status: string }[];
+  }[];
+}
+export interface DiagnosisBenchmark {
+  id: string;
+  correct: number;
+  total: number;
+  accuracy: number;
+  blind_inputs: string;
+  limitations: string;
+  samples: {
+    run_id: string;
+    expected_subtype: string | null;
+    predicted_subtype: string | null;
+    expected_outcome: string;
+    predicted_outcome: string;
+    correct: boolean;
+  }[];
+}

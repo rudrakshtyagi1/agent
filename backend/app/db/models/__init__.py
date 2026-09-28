@@ -25,3 +25,5 @@ __all__ = [
 from app.db.models.evaluation_suite import EvaluationSuiteModel
 
 from app.db.models.chaos_campaign import ChaosCampaignModel
+
+from app.db.models.diagnosis import DiagnosisModel
