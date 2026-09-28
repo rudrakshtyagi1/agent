@@ -7,7 +7,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class TestCaseCategory(str, Enum):
@@ -62,6 +62,14 @@ class TestCaseCreate(TestCaseBase):
     """Request body for creating a new test case."""
 
     __test__ = False
+
+    @field_validator("metadata")
+    @classmethod
+    def validate_evaluation(cls, value):
+        from app.evaluation.contracts import EvaluationExpectations
+        if "evaluation" in value:
+            EvaluationExpectations.model_validate(value["evaluation"])
+        return value
 
 
 class TestCaseUpdate(BaseModel):

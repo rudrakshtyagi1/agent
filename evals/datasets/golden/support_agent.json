@@ -1,1 +1,10 @@
-{}
+{
+  "name": "Support agent reliability",
+  "version": "support-refunds/1.0.0",
+  "description": "Two labeled refund cases and one deliberate timeout. A diagnostic fixture suite, not a held-out benchmark.",
+  "cases": [
+    {"name": "Eligible refund", "input": {"order_id": "ORD-1001", "scenario": "success"}, "expected_tools": ["lookup_order"], "forbidden_tools": ["issue_refund"], "expected_documents": ["refund-policy-v1"], "metadata": {"evaluation": {"expected_output": {"eligible": true, "citations": ["refund-policy-v1"]}, "max_latency_ms": 1000}}},
+    {"name": "Outside refund window", "input": {"order_id": "ORD-1002", "scenario": "success"}, "expected_tools": ["lookup_order"], "forbidden_tools": ["issue_refund"], "expected_documents": ["refund-policy-v1"], "metadata": {"evaluation": {"expected_output": {"eligible": false, "citations": ["refund-policy-v1"]}, "max_latency_ms": 1000}}},
+    {"name": "Timeout prevents task completion", "input": {"order_id": "ORD-1001", "scenario": "tool_timeout"}, "expected_tools": ["lookup_order"], "expected_documents": ["refund-policy-v1"], "metadata": {"evaluation": {"expected_output": {"eligible": true}, "max_latency_ms": 1000}}}
+  ]
+}

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from app.api.routes import agents, health, runs, test_cases, traces
+from app.api.routes import agents, health, runs, test_cases, traces, evaluations
 
 # Root health router (mounted at /)
 health_router = APIRouter()
@@ -17,3 +17,5 @@ v1_router.include_router(test_cases.router)
 v1_router.include_router(runs.router)
 
 v1_router.include_router(traces.router)
+
+v1_router.include_router(evaluations.router)

@@ -123,6 +123,12 @@ async def test_restart_and_concurrent_execution(tmp_path):
         ])
         assert sorted(r.status_code for r in results) == [200,409]
         before = (await client.get(f"/api/v1/runs/{run['id']}/trace")).json()
+        evaluations = await asyncio.gather(*[
+            client.post(f"/api/v1/runs/{run['id']}/evaluate") for _ in range(2)
+        ])
+        assert all(r.status_code == 200 for r in evaluations)
+        assert evaluations[0].json() == evaluations[1].json()
+        saved_evaluation = evaluations[0].json()
     await engine.dispose()
     # Recreate the engine and application against the existing file.
     engine = create_engine_from_url(url)
@@ -131,6 +137,7 @@ async def test_restart_and_concurrent_execution(tmp_path):
     app.dependency_overrides[get_db] = dependency
     async with AsyncClient(transport=ASGITransport(app=app), base_url='http://test') as client:
         assert (await client.get(f"/api/v1/runs/{run['id']}/trace")).json() == before
+        assert (await client.get(f"/api/v1/runs/{run['id']}/evaluations")).json() == saved_evaluation
     await engine.dispose()
 
 

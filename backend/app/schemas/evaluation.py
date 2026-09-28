@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class EvaluationDimension(str, Enum):
@@ -41,5 +41,11 @@ class EvaluationResponse(EvaluationBase):
 
     id: uuid.UUID = Field(..., description="Unique evaluation identifier.")
     created_at: datetime = Field(..., description="UTC timestamp of evaluation.")
+
+    @field_validator("created_at")
+    @classmethod
+    def normalize_utc(cls, value):
+        # SQLite drops timezone information; all persisted timestamps are UTC.
+        return value.replace(tzinfo=timezone.utc) if value.tzinfo is None else value.astimezone(timezone.utc)
 
     model_config = ConfigDict(from_attributes=True)

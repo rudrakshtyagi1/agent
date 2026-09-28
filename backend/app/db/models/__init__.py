@@ -21,3 +21,5 @@ __all__ = [
     "FailureModel",
     "ExperimentModel",
 ]
+
+from app.db.models.evaluation_suite import EvaluationSuiteModel

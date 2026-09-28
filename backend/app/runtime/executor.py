@@ -15,6 +15,7 @@ from app.db.models.agent import AgentModel
 from app.db.models.run import RunModel
 from app.db.models.test_case import TestCaseModel
 from app.schemas.trace import SpanType
+from app.evaluation.contracts import snapshot_case
 from app.target_agents import support
 from app.tracing.tracer import Tracer
 from app.tracing.trace_store import save_trace
@@ -45,7 +46,8 @@ async def execute_run(db: AsyncSession, run: RunModel) -> RunModel:
     started = perf_counter_ns()
     try:
         with tracer.span("support_agent", SpanType.PLANNER,
-                         metadata={"agent_version": run.agent_version, "test_case_id": str(case.id)}) as root:
+                         metadata={"agent_version": run.agent_version, "test_case_id": str(case.id),
+                                   "test_case_snapshot": snapshot_case(case)}) as root:
             async with asyncio.timeout(EXECUTION_TIMEOUT_SECONDS):
                 root.output = await support.execute(case.input, tracer)
     except Exception as exc:

@@ -72,6 +72,14 @@ export async function demoRun(scenario: string): Promise<Run> {
     name:
       scenario === "success" ? "Refund eligibility" : "Order service timeout",
     category: "functional",
+    expected_tools: ["lookup_order"],
+    expected_documents: ["refund-policy-v1"],
+    metadata: {
+      evaluation: {
+        expected_output: { eligible: true, citations: ["refund-policy-v1"] },
+        max_latency_ms: 1000,
+      },
+    },
     input: {
       scenario,
       order_id: "ORD-1001",
@@ -84,4 +92,48 @@ export async function demoRun(scenario: string): Promise<Run> {
     test_case_id: test.id,
   });
   return api<Run>(`/runs/${run.id}/execute`, {});
+}
+
+export interface Evaluation {
+  id: string;
+  evaluator: string;
+  dimension: string;
+  score: number | null;
+  passed: boolean | null;
+  details: {
+    reason: string;
+    availability: string;
+    evidence_span_ids: string[];
+    value?: number | null;
+    unit?: string;
+    [key: string]: unknown;
+  };
+}
+export interface MetricSummary {
+  total: number;
+  scored: number;
+  unavailable: number;
+  mean_score: number | null;
+  passed: number;
+  judged: number;
+  mean_value: number | null;
+  unit?: string;
+}
+export interface EvaluationReport {
+  evaluator_version: string;
+  results: Evaluation[];
+  summary: Record<string, MetricSummary>;
+}
+export interface SuiteReport {
+  id: string;
+  dataset_version: string;
+  dataset_sha256: string;
+  dataset_description: string;
+  evaluator_version: string;
+  summary: Record<string, MetricSummary>;
+  cases: (EvaluationReport & {
+    name: string;
+    run_id: string;
+    execution_status: string;
+  })[];
 }

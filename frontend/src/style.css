@@ -469,3 +469,130 @@ footer {
     grid-template-columns: 65% 35%;
   }
 }
+.sidebar button.nav {
+  display: block;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 8px;
+  border: 0;
+  background: transparent;
+}
+.sidebar button.nav.active {
+  background: #20362f;
+}
+.mobile-nav {
+  display: none;
+}
+.evaluation-panel {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid #33404b;
+}
+.evaluation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+.evaluation-card {
+  padding: 15px;
+  border: 1px solid #2c3c47;
+  border-radius: 7px;
+  background: #111b23;
+  min-width: 0;
+}
+.evaluation-card summary {
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  font-size: 12px;
+  text-transform: capitalize;
+}
+.evaluation-card small {
+  display: block;
+  color: #8fa5b5;
+  font-size: 10px;
+  line-height: 1.7;
+}
+.evaluation-card summary small {
+  grid-column: 1/-1;
+}
+.evaluation-card p {
+  font-size: 12px;
+}
+.evaluation-card pre {
+  max-height: 260px;
+  overflow: auto;
+}
+.evidence-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.evidence-links button {
+  font-size: 10px;
+  padding: 6px;
+}
+.metric-score {
+  display: block;
+  font-size: 27px;
+  margin: 12px 0;
+}
+.suite-intro {
+  padding: 22px;
+  border: 1px solid #34434e;
+  border-radius: 9px;
+  background: #121d25;
+}
+.suite-intro select {
+  background: #17212b;
+  color: #c4d4df;
+  padding: 10px;
+  border: 1px solid #3d515e;
+  border-radius: 6px;
+  max-width: 100%;
+}
+.section-title {
+  font-size: 18px;
+  margin-top: 30px;
+}
+.case-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 18px;
+  border-bottom: 1px solid #2c3a45;
+}
+.case-row b {
+  font-size: 14px;
+}
+.case-row p {
+  margin: 5px 0;
+  font-size: 12px;
+}
+.suite-cases {
+  border: 1px solid #2c3a45;
+  border-radius: 8px;
+}
+.report-details {
+  padding: 20px 0;
+  color: #91a9b8;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 700px) {
+  .mobile-nav {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .case-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .evaluation-grid {
+    grid-template-columns: 1fr;
+  }
+}

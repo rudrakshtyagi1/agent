@@ -13,7 +13,7 @@ same dataset. Keep a deterministic offline mode and a real model mode.
 
 ## Current state
 
-Phase 1 and Phase 2 are implemented: the FastAPI/database foundation now
+Phases 1–3 are implemented: the FastAPI/database foundation now
 executes the built-in offline support agent and persists nested spans with
 completed/failed run status. The React trace explorer launches success and
 simulated timeout scenarios and displays timing, inputs, outputs, and errors.
@@ -29,7 +29,14 @@ Process termination rolls back the transaction, leaving the original queued
 run for an explicit retry. There is no durable background worker, live stream,
 external trace-ingestion endpoint, OpenTelemetry export, or automatic redaction.
 The demo uses fixture data and a template model; real LLM/RAG integrations and
-evaluation are future work. Do not use the unauthenticated local API publicly.
+general semantic evaluation are future work. Do not use the unauthenticated local API publicly.
+
+Phase 3 adds ten evidence-backed metrics, frozen expectation snapshots,
+idempotent persisted evaluations, and a versioned three-case diagnostic suite
+with saved reports and per-metric denominators. Evaluation Studio opens case
+traces and metric evidence. Groundedness is explicitly scoped to the support
+refund template; simulated token usage is unavailable. This fixture dataset is
+not a held-out benchmark. The next milestone is Phase 4 chaos testing.
 
 ## Build order and acceptance criteria
 
