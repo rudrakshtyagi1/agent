@@ -1,6 +1,8 @@
 # Completion status
 
-The implemented portfolio scope is complete and packaged for manual AWS deployment.
+The implemented portfolio scope is complete and deployed on AWS EC2 at
+https://rudraksh-agentguard.duckdns.org. Public HTTPS readiness and dashboard HTTP 200
+were verified on September 30, 2026.
 “Complete” here means the documented local platform, real-provider demonstration,
 and single-server authenticated monitoring deployment—not every capability of an
 enterprise observability product.
@@ -26,9 +28,10 @@ be checked after pushing, separately from local results.
 
 ## Still requires your environment or judgment
 
-- Provision AWS resources, choose region/domain, configure DNS and network access,
-  set budget controls and deploy manually.
-- Verify public HTTPS, run acceptance against the hosted URL and export a real trace.
+- Configure account-specific budget controls. AWS provisioning, DNS and public HTTPS
+  are complete for the current deployment.
+- Run the full authenticated acceptance suite against the hosted URL and verify a
+  real-agent trace there; public readiness alone does not establish this.
 - Configure your off-host backup destination/schedule and external uptime alerts;
   these require account access and your retention/notification choices.
 - Have someone independently review evaluation labels and expand to a representative
