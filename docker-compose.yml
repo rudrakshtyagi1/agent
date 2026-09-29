@@ -1,8 +1,64 @@
-# AgentGuard CI/CD Workflow
-name: Workflow
-on: [push, pull_request]
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+name: agentguard
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: agentguard
+      POSTGRES_USER: agentguard
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.deploy}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U agentguard -d agentguard']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    logging: &logging
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: [sh, -c, "alembic -c backend/alembic.ini upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1 --no-access-log"]
+    environment:
+      APP_ENV: production
+      DEBUG: 'false'
+      DATABASE_URL: postgresql+asyncpg://agentguard:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@db:5432/agentguard
+      MONITOR_KEYS: ${MONITOR_KEYS:?Set MONITOR_KEYS in .env.deploy}
+      MONITOR_CAPTURE_PAYLOADS: 'false'
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/ready', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    logging: *logging
+  web:
+    build:
+      context: .
+      dockerfile: infrastructure/aws/frontend.Dockerfile
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?Set your domain in .env.deploy}
+    ports:
+      - '${HTTP_BIND:-0.0.0.0}:${HTTP_PORT:-80}:80'
+      - '${HTTPS_BIND:-0.0.0.0}:${HTTPS_PORT:-443}:443'
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    logging: *logging
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

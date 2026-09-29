@@ -6,6 +6,15 @@ a React trace explorer, a versioned evaluation engine, and paired chaos campaign
 with bounded retries, plus evidence-based failure diagnosis and symptom grouping.
 Paired regression gates and strict recorded-response replay are available. External telemetry and live monitoring are available; see [ROADMAP.md](ROADMAP.md).
 
+## Deployment and project status
+
+The AWS single-server monitoring package includes Docker builds, PostgreSQL,
+versioned Alembic migrations, same-origin Caddy HTTPS configuration, readiness,
+backup/restore scripts and deployment acceptance CI. Follow the
+[manual AWS guide](docs/AWS_DEPLOYMENT.md). See [completion status](docs/PROJECT_STATUS.md)
+for verified results and work that requires your AWS environment, and the
+[interview walkthrough](docs/INTERVIEW_DEMO.md) for a concise demo.
+
 ## Run locally
 
 Python 3.11+ and Node.js 20.19+ are required. From the repository root:
@@ -13,7 +22,7 @@ Python 3.11+ and Node.js 20.19+ are required. From the repository root:
 ```sh
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r backend/requirements.txt
+pip install -r backend/requirements.txt -e ./sdk
 make run
 ```
 
@@ -55,9 +64,9 @@ crash or request-task cancellation rolls back to queued; there is no background
 job recovery or live streaming yet. Only the built-in adapter is executable;
 registered HTTP URLs are not called. Create a new run to repeat a finished test.
 
-This is a local development platform without authentication or automatic payload
-redaction. Use fixture data. Production serving of the frontend needs an `/api`
-reverse proxy; Vite's development proxy does not apply to static build output.
+The local execution/evaluation APIs are unauthenticated and intended for fixture
+data. They are disabled outside development. The deployment package exposes only
+authenticated tenant monitoring; Caddy provides its `/api` reverse proxy.
 
 ## Verify
 

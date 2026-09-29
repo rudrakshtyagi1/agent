@@ -28,8 +28,9 @@ atomically; the intermediate running state is not exposed to other requests.
 Process termination rolls back the transaction, leaving the original queued
 run for an explicit retry. The external monitoring pipeline has a durable inbox and background worker.
 There is no live span stream or OpenTelemetry export.
-The demo uses fixture data and a template model; real LLM/RAG integrations and
-general semantic evaluation are future work. Do not use the unauthenticated local API publicly.
+The offline demo uses fixture data and a template model. A separate bounded Groq
+agent now uses real inference and local BM25 retrieval with recorded live results.
+General semantic evaluation remains outside the implemented scope. Do not use the unauthenticated local API publicly.
 
 Phase 3 adds ten evidence-backed metrics, frozen expectation snapshots,
 idempotent persisted evaluations, and a versioned three-case diagnostic suite
@@ -50,8 +51,10 @@ release gates, an offline CI command, and strict recorded boundary playback.
 Phase 7 adds tenant-key authenticated external ingestion, a durable bounded inbox,
 head sampling, retention, default payload minimization, dashboard alerts, a Python
 SDK, and a local overhead measurement. It supports one API process, not distributed
-workers. The seven-phase portfolio milestone is complete; deployment operations,
-real-provider evaluation calibration and scale validation remain future work. General LLM investigation and
+workers. The seven-phase portfolio milestone and single-server AWS deployment package are
+implemented. Live Groq evaluation and local PostgreSQL deployment checks are recorded
+in docs/benchmarks. Actual AWS deployment, human calibration and workload-specific
+scale validation remain operator follow-up; see docs/PROJECT_STATUS.md. General LLM investigation and
 embedding-based clustering are not implemented or claimed.
 
 ## Build order and acceptance criteria

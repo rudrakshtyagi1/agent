@@ -1,0 +1,15 @@
+.git
+.env
+.env.*
+**/.env
+**/.env.*
+**/__pycache__
+**/.pytest_cache
+**/node_modules
+**/dist
+**/*.egg-info
+**/*.db
+**/*.sqlite*
+artifacts
+.freebuff
+.DS_Store

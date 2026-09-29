@@ -17,7 +17,7 @@ class MonitoringBoundary:
         monitor = path == prefix or path.startswith(prefix + "/")
         if (
             self.settings.app_env != "development"
-            and path not in ("/health", "/health/")
+            and path not in ("/health", "/health/", "/ready", "/ready/")
             and not monitor
         ):
             return await JSONResponse(

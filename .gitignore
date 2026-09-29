@@ -13,3 +13,6 @@ dist/
 *.egg-info/
 
 artifacts/
+.env.*
+!.env.example
+backups/

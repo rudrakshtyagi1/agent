@@ -43,7 +43,27 @@ async def lifespan(app: FastAPI):
     from app.db.session import close_db, init_db, init_engine
 
     init_engine(settings.database_url)
-    await init_db()
+    if settings.app_env == "development":
+        await init_db()
+    else:
+        # Deployment runs Alembic before starting the one supported API process.
+        from alembic.config import Config
+        from alembic.script import ScriptDirectory
+        from alembic.runtime.migration import MigrationContext
+        from pathlib import Path
+        from app.db import session as database
+
+        config = Config(str(Path(__file__).resolve().parents[1] / "alembic.ini"))
+        expected = ScriptDirectory.from_config(config).get_current_head()
+        async with database._engine.connect() as connection:
+            actual = await connection.run_sync(
+                lambda conn: MigrationContext.configure(conn).get_current_revision()
+            )
+        if actual != expected:
+            await close_db()
+            raise RuntimeError(
+                "Database schema is not current; run alembic upgrade head"
+            )
     logger.info("Database ready.")
 
     from app.db import session as database

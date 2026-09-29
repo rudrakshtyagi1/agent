@@ -81,6 +81,8 @@ type Detail = {
 };
 
 export default function Monitoring() {
+  const deployed = import.meta.env.VITE_MONITOR_ONLY === "true";
+  const exportEndpoint = deployed ? window.location.origin : "http://127.0.0.1:8000";
   const [key, setKey] = useState(""),
     [draft, setDraft] = useState(""),
     [overview, setOverview] = useState<Overview | null>(null),
@@ -173,7 +175,7 @@ export default function Monitoring() {
       <section className="details">
         <div className="release-controls">
           <label>
-            Tenant API key (optional in local demo)
+            Tenant API key{deployed ? " (required)" : " (optional in local demo)"}
             <input
               type="password"
               autoComplete="off"
@@ -381,10 +383,10 @@ export default function Monitoring() {
         <p>
           Configure a fresh GROQ_API_KEY in your local .env. The model selects
           local policy-search and order-lookup tools; order records are
-          synthetic. Start with a dry-run, then run one live case.
+          synthetic. Set AGENTGUARD_API_KEY locally to your tenant key before exporting. Start with a dry-run, then run one live case.
         </p>
         <pre>{`python scripts/run_groq_support.py --dry-run
-python scripts/run_groq_support.py --limit 1 --max-requests 4 --export`}</pre>
+python scripts/run_groq_support.py --limit 1 --max-requests 4 --export --monitor-url ${JSON.stringify(exportEndpoint)}`}</pre>
         <p>
           Look for groq-support in the traces above. Answers and evaluation
           checks are saved to artifacts/groq-support-report.json. Provider
@@ -399,7 +401,7 @@ python scripts/run_groq_support.py --limit 1 --max-requests 4 --export`}</pre>
           the execution finishes. No external service credentials are needed for
           the local example.
         </p>
-        <pre>{`PYTHONPATH=sdk python scripts/send_monitor_demo.py --count 6\n\nfrom agentguard import Trace\ntrace = Trace("my-agent", "1.0.0")\nwith trace.span("agent", "planner"):\n    with trace.span("lookup", "tool_call"):\n        result = your_existing_tool()\ntrace.export(api_key=os.getenv("AGENTGUARD_API_KEY"))`}</pre>
+        <pre>{`PYTHONPATH=sdk python scripts/send_monitor_demo.py --count 6 --endpoint ${JSON.stringify(exportEndpoint)}\n\nimport os\nfrom agentguard import Trace\ntrace = Trace("my-agent", "1.0.0")\nwith trace.span("agent", "planner"):\n    with trace.span("lookup", "tool_call"):\n        result = your_existing_tool()\ntrace.export(${JSON.stringify(exportEndpoint)}, api_key=os.getenv("AGENTGUARD_API_KEY"))`}</pre>
         <p>
           SDK exports completed traces with bounded retries. No streaming or
           automatic instrumentation. Capture is off by default; names must never

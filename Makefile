@@ -10,7 +10,7 @@ help:
 	@echo "  make clean     Remove cache and temporary files"
 
 install:
-	$(PYTHON) -m pip install -r backend/requirements.txt
+	$(PYTHON) -m pip install -r backend/requirements.txt -e ./sdk
 
 test:
 	PYTHONPATH=backend $(PYTHON) -m pytest backend/tests -v
@@ -21,4 +21,3 @@ run:
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type d -name ".pytest_cache" -exec rm -rf {} +
-	rm -f backend/*.db

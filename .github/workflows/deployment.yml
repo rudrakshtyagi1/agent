@@ -1,0 +1,39 @@
+name: Deployment acceptance
+on: [push, pull_request]
+jobs:
+  containers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install httpx python-dotenv
+      - run: python scripts/init_deploy_env.py --domain localhost
+      - run: docker compose --env-file .env.deploy up -d --build --wait
+      - name: Verify authenticated deployment
+        run: |
+          python - <<'PY'
+          import json, os, subprocess
+          from dotenv import dotenv_values
+          values = dotenv_values('.env.deploy')
+          env = dict(os.environ, AGENTGUARD_API_KEY=json.loads(values['MONITOR_KEYS'])['portfolio'])
+          subprocess.run(['python', 'scripts/deployment_smoke.py', '--endpoint', 'http://localhost'], env=env, check=True)
+          subprocess.run(['docker', 'compose', '--env-file', '.env.deploy', 'restart', 'api'], check=True)
+          subprocess.run(['docker', 'compose', '--env-file', '.env.deploy', 'up', '-d', '--wait'], check=True)
+          previous = json.load(open('artifacts/deployment-smoke.json'))['trace_id']
+          subprocess.run(['python', 'scripts/deployment_smoke.py', '--endpoint', 'http://localhost', '--previous-trace', previous, '--output', 'artifacts/deployment-restart.json'], env=env, check=True)
+          PY
+      - name: Verify migrations and restore
+        run: |
+          docker compose --env-file .env.deploy exec -T api alembic -c backend/alembic.ini check
+          scripts/backup_database.sh
+          scripts/verify_backup.sh "$(ls -t backups/*.dump | head -1)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: deployment-evidence
+          path: artifacts/deployment*.json
+      - if: always()
+        run: docker compose --env-file .env.deploy down

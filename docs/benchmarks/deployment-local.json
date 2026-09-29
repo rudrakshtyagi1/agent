@@ -1,0 +1,86 @@
+{
+  "smoke": {
+    "passed": true,
+    "trace_id": "88b9a379-9088-4252-9070-126f2d711ebd",
+    "previous_trace_verified": null,
+    "checks": [
+      "readiness",
+      "dashboard",
+      "anonymous_denied",
+      "wrong_key_denied",
+      "demo_disabled",
+      "ingestion",
+      "processing"
+    ],
+    "endpoint": "http://localhost:8088"
+  },
+  "restart": {
+    "passed": true,
+    "trace_id": "dd1346f6-a5c4-4753-a5fb-3a621756565d",
+    "previous_trace_verified": "88b9a379-9088-4252-9070-126f2d711ebd",
+    "checks": [
+      "readiness",
+      "dashboard",
+      "anonymous_denied",
+      "wrong_key_denied",
+      "demo_disabled",
+      "ingestion",
+      "processing"
+    ],
+    "endpoint": "http://localhost:8088"
+  },
+  "load": {
+    "count": 50,
+    "concurrency": 5,
+    "accepted": 50,
+    "failed_or_sampled": 0,
+    "processed": 50,
+    "dead_letter": 0,
+    "pending_after_60s": 0,
+    "admission_seconds": 0.15963395801372826,
+    "admission_median_ms": 12.192082998808473,
+    "admission_p95_ms": 42.603624984622,
+    "passed": true,
+    "limitations": [
+      "Synthetic local Docker/PostgreSQL workload; no AWS capacity claim.",
+      "Admission latency includes SDK HTTP overhead; completion checked separately.",
+      "No provider calls; no LLM quality or sustained-load claim."
+    ]
+  },
+  "date": "2026-09-29",
+  "environment": "Local Docker Desktop on arm64, PostgreSQL 16, production settings, loopback HTTP",
+  "migration_revision": "9b050acd3a68",
+  "migration_drift_check": "No new upgrade operations detected",
+  "backup_restore": {
+    "isolated_database": true,
+    "restored_trace_count": 1,
+    "schema_revision": "9b050acd3a68"
+  },
+  "limitations": [
+    "AWS resources not provisioned; public DNS/TLS unverified.",
+    "Local bounded load, not a sustained production capacity estimate."
+  ],
+  "final_locked_build": {
+    "passed": true,
+    "trace_id": "be64b608-ce69-4376-a60e-b12589d7023b",
+    "previous_trace_verified": "88b9a379-9088-4252-9070-126f2d711ebd",
+    "checks": [
+      "readiness",
+      "dashboard",
+      "anonymous_denied",
+      "wrong_key_denied",
+      "demo_disabled",
+      "ingestion",
+      "processing"
+    ],
+    "endpoint": "http://localhost:8088"
+  },
+  "verification": {
+    "backend_tests_local": 126,
+    "backend_tests_python312_container": 126,
+    "frontend_build": "passed",
+    "offline_release_gate": "passed",
+    "caddy_configuration": "valid",
+    "note": "Backend unit/integration suite runs with test defaults. Separate HTTP acceptance exercises production settings against PostgreSQL."
+  }
+}
