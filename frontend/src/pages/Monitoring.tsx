@@ -318,6 +318,7 @@ export default function Monitoring() {
               <th>Agent / version</th>
               <th>Queue / execution</th>
               <th>Latency</th>
+              <th>Reported tokens</th>
               <th>Observed error step</th>
               <th>Evidence</th>
             </tr>
@@ -333,6 +334,7 @@ export default function Monitoring() {
                   {t.status} / {t.summary?.execution_status ?? "—"}
                 </td>
                 <td>{t.summary?.latency_ms ?? "—"} ms</td>
+                <td>{t.summary?.reported_tokens ?? "—"}</td>
                 <td>
                   {t.summary?.observed_failure?.name ?? "No recorded error"}
                 </td>
@@ -375,6 +377,20 @@ export default function Monitoring() {
         </section>
       )}
       <section className="details">
+        <h2>Run the Groq support agent</h2>
+        <p>
+          Configure a fresh GROQ_API_KEY in your local .env. The model selects
+          local policy-search and order-lookup tools; order records are
+          synthetic. Start with a dry-run, then run one live case.
+        </p>
+        <pre>{`python scripts/run_groq_support.py --dry-run
+python scripts/run_groq_support.py --limit 1 --max-requests 4 --export`}</pre>
+        <p>
+          Look for groq-support in the traces above. Answers and evaluation
+          checks are saved to artifacts/groq-support-report.json. Provider
+          quotas produce unavailable measurements; no paid fallback is used.
+          Live model behavior has not yet been verified.
+        </p>
         <h2>Connect a Python agent</h2>
         <p>
           Wrap existing retrieval, model and tool calls in spans. Export after

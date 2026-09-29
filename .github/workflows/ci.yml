@@ -10,6 +10,8 @@ jobs:
           python-version: '3.12'
       - run: pip install -r backend/requirements.txt -e ./sdk
       - run: python -m pytest backend/tests -q
+      - name: Validate real-agent experiment plan without API calls
+        run: python scripts/run_groq_support.py --dry-run
       - uses: actions/setup-node@v4
         with:
           node-version: '22'

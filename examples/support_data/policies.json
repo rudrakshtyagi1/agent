@@ -1,0 +1,9 @@
+{
+  "version":"support-corpus/1.0.0",
+  "documents":[
+    {"id":"refund-policy-v2","title":"Refund eligibility and returns","text":"For standard products, a delivered order is eligible for a refund through day 30 after delivery, inclusive. After day 30 it is ineligible. Final-sale products are ineligible regardless of age. For an undelivered order or an order not found in the system, do not infer eligibility: request human review. Support agents only assess eligibility; they cannot issue refunds."},
+    {"id":"shipping-policy-v1","title":"Shipping and delivery","text":"Standard shipping takes five business days. Delivery estimates are not refund eligibility rules. Consult the refund policy when assessing returns."},
+    {"id":"privacy-policy-v1","title":"Privacy and account access","text":"Use only the order identifier supplied by the customer. Do not request passwords, payment details, or other customers' order identifiers."},
+    {"id":"warranty-policy-v1","title":"Product warranty","text":"Manufacturing defects may qualify for warranty support for twelve months. Warranty coverage is separate from the refund policy and must not be used to extend the refund window."}
+  ]
+}

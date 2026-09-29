@@ -1,0 +1,11 @@
+{
+  "version":"synthetic-orders/1.0.0",
+  "orders":{
+    "DEMO-001":{"days_since_delivery":12,"delivered":true,"final_sale":false},
+    "DEMO-002":{"days_since_delivery":45,"delivered":true,"final_sale":false},
+    "DEMO-003":{"days_since_delivery":30,"delivered":true,"final_sale":false},
+    "DEMO-004":{"days_since_delivery":31,"delivered":true,"final_sale":false},
+    "DEMO-005":{"days_since_delivery":4,"delivered":true,"final_sale":true},
+    "DEMO-006":{"days_since_delivery":null,"delivered":false,"final_sale":false}
+  }
+}
