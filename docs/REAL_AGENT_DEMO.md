@@ -113,7 +113,8 @@ scoped answer checks.
 ## 4. Evaluate without overstating the result
 
 `evals/datasets/real_support/cases.json` version 1.1.0 has two development cases,
-four untouched holdout cases and one regression case. The original inclusive-boundary
+four holdout cases and one regression case. The four holdout cases have now been
+evaluated once on frozen runtime 1.2.0; see the recorded review below. The original inclusive-boundary
 holdout was moved to regression after its live failure informed an orchestration fix. Cases include the inclusive boundary, the day after it,
 final-sale exceptions, undelivered orders and unknown IDs. Labels are drafts from
 our synthetic policy, **not independently reviewed**. No expected labels are passed
@@ -157,7 +158,10 @@ is unknown. Provider-error runs do not represent measured answer failures. The
 boundary failure exposed repeated retrieval consuming the turn budget. Runtime
 1.2.0 separates evidence collection from final JSON generation. Both intermediate
 fixes and their failures remain in the record. This boundary rerun is a regression,
-not an untouched holdout result. The four remaining holdout cases have not run.
+not an untouched holdout result. The subsequent [frozen holdout evaluation](benchmarks/HOLDOUT_REVIEW.md)
+passed all four remaining cases in 12 requests, with all four monitoring traces
+processed. No runtime or prompt changes were made for that run. Independent human
+label review remains pending; these cases are now exposed.
 
 The final recovered trace was persisted with 11 spans, one failed order attempt,
 a retry, a successful second attempt and 1,945 reported model tokens. Its root
@@ -173,7 +177,7 @@ python scripts/run_groq_support.py --split regression --limit 1 \
 
 1. Repeat the recorded demo when needed; keep provider runs bounded.
 2. Review expected labels independently and expand the corpus/cases from a real use case.
-3. Record paired results without changing the holdout; document failures, not just successes.
+3. Create a fresh holdout before tuning on the exposed results; use paired runs for future version comparisons.
 4. Validate deployment/load behavior before a hosted demo; hosting needs account access.
 5. Produce the final résumé claims and demo narration from measured results.
 

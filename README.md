@@ -533,5 +533,7 @@ needed for the normal CI test suite.
 
 Live validation includes the initial boundary failure, two provider-error attempts,
 and the passing runtime 1.2.0 regression and recovery comparison. See the
-[recorded experiment evidence](docs/benchmarks/groq-live-validation.json); four
-untouched holdout cases remain for later evaluation.
+[recorded experiment evidence](docs/benchmarks/groq-live-validation.json); the subsequent
+[frozen holdout evaluation](docs/benchmarks/HOLDOUT_REVIEW.md) passed all four
+previously unrun cases in 12 provider requests. This small synthetic result does
+not establish production accuracy; independent human label review remains pending.

@@ -1,0 +1,434 @@
+{
+  "created_at": "2026-09-29T16:32:42.719324+00:00",
+  "model": "qwen/qwen3.8-27b",
+  "mode": "live",
+  "dataset_version": "groq-support-cases/1.1.0",
+  "dataset_sha256": "c6d63a40d09cfec5016d22e19e978f703ebeb1628aa70c21cb113d1f2c832950",
+  "label_status": "Draft synthetic labels authored from the documented policy; not independently reviewed.",
+  "prompt_version": "groq-support/1.1.0",
+  "split": "holdout",
+  "case_ids": [
+    "holdout-outside",
+    "holdout-exception",
+    "holdout-undelivered",
+    "holdout-unknown"
+  ],
+  "versions": [
+    "grounded"
+  ],
+  "max_provider_requests": 12,
+  "fault": "none",
+  "cases": [
+    {
+      "id": "holdout-outside",
+      "results": {
+        "grounded": {
+          "trace_id": "ceb1fbd6-e9b2-4ffa-8c19-91730d312009",
+          "status": "completed",
+          "error": null,
+          "failure_kind": null,
+          "answer": {
+            "decision": "ineligible",
+            "answer": "The order was delivered 31 days ago. The refund policy states that standard products are eligible for a refund through day 30 after delivery, inclusive. Since day 31 is after the 30-day window, the order is ineligible for a refund.",
+            "citations": [
+              "refund-policy-v2"
+            ]
+          },
+          "tool_calls": [
+            {
+              "name": "search_policy",
+              "arguments": {
+                "query": "refund eligibility window"
+              },
+              "span_id": "841eab95-9353-4ae2-b917-3e64acf1eea8"
+            },
+            {
+              "name": "lookup_order",
+              "arguments": {
+                "order_id": "DEMO-004"
+              },
+              "span_id": "4b8b2a37-b854-41a2-a6b4-03ee5bcae3c9"
+            }
+          ],
+          "retrieved_ids": [
+            "refund-policy-v2",
+            "shipping-policy-v1",
+            "warranty-policy-v1"
+          ],
+          "provider_requests": 3,
+          "reported_tokens": 1973,
+          "provenance": {
+            "prompt_version": "groq-support/1.1.0",
+            "runtime_version": "groq-support-runtime/1.2.0",
+            "finalize_after_evidence": true,
+            "agent_version": "grounded",
+            "model": "qwen/qwen3.8-27b",
+            "corpus_version": "support-corpus/1.0.0",
+            "retriever_version": "bm25-title-boost/1.0.0",
+            "orders_version": "synthetic-orders/1.0.0",
+            "corpus_sha256": "1e0ed7b9bfd50631c087384cbc81e8a4c19877a5a924070c93e2c5f20c418439",
+            "orders_sha256": "828dc5273412c5ef5620245a5f61176e3ca3c734e53496a763f4d15033f3052e",
+            "synthetic_orders": true,
+            "fault": "none",
+            "max_requests": 12,
+            "local_tool_attempts": 2
+          },
+          "evaluation": {
+            "evaluator_version": "support-decision-checks/1.0.0",
+            "case_sha256": "0fd049e62ea5defc443be6ad894250864415abab1cc842b479434a03e9bb79ef",
+            "passed": true,
+            "measurement_status": "measured",
+            "checks": {
+              "execution_completed": true,
+              "decision_matches": true,
+              "required_citations": true,
+              "citations_retrieved": true,
+              "requested_order_read": true
+            },
+            "limitation": "Checks decision labels, citation IDs, and tool use; does not grade prose faithfulness or semantic correctness."
+          },
+          "telemetry": {
+            "id": "598d5dee-2317-4f6e-b9af-f66871e33516",
+            "status": "queued",
+            "duplicate": false
+          },
+          "persisted_telemetry": {
+            "status": "processed",
+            "summary": {
+              "agent_name": "groq-support",
+              "agent_version": "grounded-1.2.0",
+              "environment": "development",
+              "scope": "[\"groq-support\", \"grounded-1.2.0\", \"development\"]",
+              "execution_status": "completed",
+              "latency_ms": 16350.529,
+              "span_count": 9,
+              "error_spans": 0,
+              "reported_tokens": 1973,
+              "observed_failure": null,
+              "task_success": null,
+              "note": "Execution health only; external traces have no verified task labels."
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "holdout-exception",
+      "results": {
+        "grounded": {
+          "trace_id": "6761e328-6a7f-4adf-bacf-656abbcc13e3",
+          "status": "completed",
+          "error": null,
+          "failure_kind": null,
+          "answer": {
+            "decision": "ineligible",
+            "answer": "The order is marked as final sale, which makes it ineligible for a refund regardless of the time since delivery.",
+            "citations": [
+              "refund-policy-v2"
+            ]
+          },
+          "tool_calls": [
+            {
+              "name": "search_policy",
+              "arguments": {
+                "query": "refund policy"
+              },
+              "span_id": "2ffe8e80-e6e7-41c4-bbbf-06b5692db399"
+            },
+            {
+              "name": "lookup_order",
+              "arguments": {
+                "order_id": "DEMO-005"
+              },
+              "span_id": "a21fd690-8b03-4bf0-b7b0-1cfd26a9d354"
+            }
+          ],
+          "retrieved_ids": [
+            "refund-policy-v2",
+            "shipping-policy-v1",
+            "warranty-policy-v1"
+          ],
+          "provider_requests": 3,
+          "reported_tokens": 1956,
+          "provenance": {
+            "prompt_version": "groq-support/1.1.0",
+            "runtime_version": "groq-support-runtime/1.2.0",
+            "finalize_after_evidence": true,
+            "agent_version": "grounded",
+            "model": "qwen/qwen3.8-27b",
+            "corpus_version": "support-corpus/1.0.0",
+            "retriever_version": "bm25-title-boost/1.0.0",
+            "orders_version": "synthetic-orders/1.0.0",
+            "corpus_sha256": "1e0ed7b9bfd50631c087384cbc81e8a4c19877a5a924070c93e2c5f20c418439",
+            "orders_sha256": "828dc5273412c5ef5620245a5f61176e3ca3c734e53496a763f4d15033f3052e",
+            "synthetic_orders": true,
+            "fault": "none",
+            "max_requests": 12,
+            "local_tool_attempts": 2
+          },
+          "evaluation": {
+            "evaluator_version": "support-decision-checks/1.0.0",
+            "case_sha256": "9694a79fd29b8f39a61619ebfd9f679977e9ab20cdb75fb7a10851d5ac9b577a",
+            "passed": true,
+            "measurement_status": "measured",
+            "checks": {
+              "execution_completed": true,
+              "decision_matches": true,
+              "required_citations": true,
+              "citations_retrieved": true,
+              "requested_order_read": true
+            },
+            "limitation": "Checks decision labels, citation IDs, and tool use; does not grade prose faithfulness or semantic correctness."
+          },
+          "telemetry": {
+            "id": "5665478c-fab2-4ed6-abd5-13e17c9dc71a",
+            "status": "queued",
+            "duplicate": false
+          },
+          "persisted_telemetry": {
+            "status": "processed",
+            "summary": {
+              "agent_name": "groq-support",
+              "agent_version": "grounded-1.2.0",
+              "environment": "development",
+              "scope": "[\"groq-support\", \"grounded-1.2.0\", \"development\"]",
+              "execution_status": "completed",
+              "latency_ms": 23915.103,
+              "span_count": 9,
+              "error_spans": 0,
+              "reported_tokens": 1956,
+              "observed_failure": null,
+              "task_success": null,
+              "note": "Execution health only; external traces have no verified task labels."
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "holdout-undelivered",
+      "results": {
+        "grounded": {
+          "trace_id": "19b528f6-c09a-4ca7-af85-d9a52e207fef",
+          "status": "completed",
+          "error": null,
+          "failure_kind": null,
+          "answer": {
+            "decision": "needs_review",
+            "answer": "The order is marked as undelivered. According to the refund policy, eligibility for undelivered orders cannot be inferred and requires human review.",
+            "citations": [
+              "refund-policy-v2"
+            ]
+          },
+          "tool_calls": [
+            {
+              "name": "search_policy",
+              "arguments": {
+                "query": "refund policy"
+              },
+              "span_id": "25ea6a40-03b3-409d-ac53-4c98db4271da"
+            },
+            {
+              "name": "lookup_order",
+              "arguments": {
+                "order_id": "DEMO-006"
+              },
+              "span_id": "2022843a-1997-41e5-ab39-5a262c83fb43"
+            }
+          ],
+          "retrieved_ids": [
+            "refund-policy-v2",
+            "shipping-policy-v1",
+            "warranty-policy-v1"
+          ],
+          "provider_requests": 3,
+          "reported_tokens": 1943,
+          "provenance": {
+            "prompt_version": "groq-support/1.1.0",
+            "runtime_version": "groq-support-runtime/1.2.0",
+            "finalize_after_evidence": true,
+            "agent_version": "grounded",
+            "model": "qwen/qwen3.8-27b",
+            "corpus_version": "support-corpus/1.0.0",
+            "retriever_version": "bm25-title-boost/1.0.0",
+            "orders_version": "synthetic-orders/1.0.0",
+            "corpus_sha256": "1e0ed7b9bfd50631c087384cbc81e8a4c19877a5a924070c93e2c5f20c418439",
+            "orders_sha256": "828dc5273412c5ef5620245a5f61176e3ca3c734e53496a763f4d15033f3052e",
+            "synthetic_orders": true,
+            "fault": "none",
+            "max_requests": 12,
+            "local_tool_attempts": 2
+          },
+          "evaluation": {
+            "evaluator_version": "support-decision-checks/1.0.0",
+            "case_sha256": "6cff5e70a26326794701cc90a54129f65e73f6f4e65500d740067e8cb263e6c7",
+            "passed": true,
+            "measurement_status": "measured",
+            "checks": {
+              "execution_completed": true,
+              "decision_matches": true,
+              "required_citations": true,
+              "citations_retrieved": true,
+              "requested_order_read": true
+            },
+            "limitation": "Checks decision labels, citation IDs, and tool use; does not grade prose faithfulness or semantic correctness."
+          },
+          "telemetry": {
+            "id": "9fa01ad3-85eb-496b-a593-95f530e64b16",
+            "status": "queued",
+            "duplicate": false
+          },
+          "persisted_telemetry": {
+            "status": "processed",
+            "summary": {
+              "agent_name": "groq-support",
+              "agent_version": "grounded-1.2.0",
+              "environment": "development",
+              "scope": "[\"groq-support\", \"grounded-1.2.0\", \"development\"]",
+              "execution_status": "completed",
+              "latency_ms": 24021.939,
+              "span_count": 9,
+              "error_spans": 0,
+              "reported_tokens": 1943,
+              "observed_failure": null,
+              "task_success": null,
+              "note": "Execution health only; external traces have no verified task labels."
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "holdout-unknown",
+      "results": {
+        "grounded": {
+          "trace_id": "372e2eca-cad5-49ed-b1f5-269be13700a5",
+          "status": "completed",
+          "error": null,
+          "failure_kind": null,
+          "answer": {
+            "decision": "needs_review",
+            "answer": "The order was not found in the system. According to the refund policy, for an order not found in the system, eligibility cannot be inferred and human review is required.",
+            "citations": [
+              "refund-policy-v2"
+            ]
+          },
+          "tool_calls": [
+            {
+              "name": "search_policy",
+              "arguments": {
+                "query": "refund policy"
+              },
+              "span_id": "dd31de50-4b25-46b7-8e5e-08fb5f31e6c6"
+            },
+            {
+              "name": "lookup_order",
+              "arguments": {
+                "order_id": "DEMO-999"
+              },
+              "span_id": "a3020d0b-e7f2-4671-85d7-cc5ee6ca426a"
+            }
+          ],
+          "retrieved_ids": [
+            "refund-policy-v2",
+            "shipping-policy-v1",
+            "warranty-policy-v1"
+          ],
+          "provider_requests": 3,
+          "reported_tokens": 1932,
+          "provenance": {
+            "prompt_version": "groq-support/1.1.0",
+            "runtime_version": "groq-support-runtime/1.2.0",
+            "finalize_after_evidence": true,
+            "agent_version": "grounded",
+            "model": "qwen/qwen3.8-27b",
+            "corpus_version": "support-corpus/1.0.0",
+            "retriever_version": "bm25-title-boost/1.0.0",
+            "orders_version": "synthetic-orders/1.0.0",
+            "corpus_sha256": "1e0ed7b9bfd50631c087384cbc81e8a4c19877a5a924070c93e2c5f20c418439",
+            "orders_sha256": "828dc5273412c5ef5620245a5f61176e3ca3c734e53496a763f4d15033f3052e",
+            "synthetic_orders": true,
+            "fault": "none",
+            "max_requests": 12,
+            "local_tool_attempts": 2
+          },
+          "evaluation": {
+            "evaluator_version": "support-decision-checks/1.0.0",
+            "case_sha256": "e856897767bd5df4b4e94dceb10966e997e6650cf798d52d4db78cbc0c854f81",
+            "passed": true,
+            "measurement_status": "measured",
+            "checks": {
+              "execution_completed": true,
+              "decision_matches": true,
+              "required_citations": true,
+              "citations_retrieved": true,
+              "requested_order_read": true
+            },
+            "limitation": "Checks decision labels, citation IDs, and tool use; does not grade prose faithfulness or semantic correctness."
+          },
+          "telemetry": {
+            "id": "a759c80b-3390-4265-baca-fb65f1dd9b88",
+            "status": "queued",
+            "duplicate": false
+          },
+          "persisted_telemetry": {
+            "status": "processed",
+            "summary": {
+              "agent_name": "groq-support",
+              "agent_version": "grounded-1.2.0",
+              "environment": "development",
+              "scope": "[\"groq-support\", \"grounded-1.2.0\", \"development\"]",
+              "execution_status": "completed",
+              "latency_ms": 24012.18,
+              "span_count": 9,
+              "error_spans": 0,
+              "reported_tokens": 1932,
+              "observed_failure": null,
+              "task_success": null,
+              "note": "Execution health only; external traces have no verified task labels."
+            }
+          }
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Small synthetic suite; no production reliability estimate.",
+    "Holdout cases are not used in prompts. Human label review is still required.",
+    "No automatic paid-model fallback; account billing mode must be checked in Groq Console."
+  ],
+  "provider_requests": 12,
+  "summary": {
+    "by_version": {
+      "baseline": {
+        "attempted": 0,
+        "measured": 0,
+        "passes": 0,
+        "unavailable": 0
+      },
+      "grounded": {
+        "attempted": 4,
+        "measured": 4,
+        "passes": 4,
+        "unavailable": 0
+      }
+    },
+    "cases_run": 4,
+    "paired_cases": 0,
+    "unmeasured_or_unpaired_cases": 4,
+    "baseline_passes": 0,
+    "grounded_passes": 0,
+    "regressions": [],
+    "improvements": []
+  },
+  "complete": true,
+  "task_measurements_complete": true,
+  "passed": true,
+  "evaluation_context": {
+    "source_commit": "65614d78dd4b39012762353f8b9bb2d3bcc771f0",
+    "review": "Policy consistency checked by implementing assistant; independent human review pending.",
+    "protocol": "Single pass of four previously unrun cases; no runtime, prompt, dataset or label changes. No baseline comparison.",
+    "exposure": "These cases have now been evaluated. If tuning on outputs, use a fresh holdout.",
+    "verified_monitoring": "All four exported traces processed by local backend."
+  }
+}
