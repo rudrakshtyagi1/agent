@@ -15,7 +15,7 @@ from app.db.models.agent import AgentModel
 from app.db.models.run import RunModel
 from app.db.models.test_case import TestCaseModel
 from app.schemas.trace import SpanType
-from app.schemas.chaos import ExecutionOptions
+from app.schemas.chaos import ExecutionOptions, RetryPolicy
 from app.chaos.engine import ENGINE_VERSION
 from app.evaluation.contracts import snapshot_case
 from app.target_agents import support
@@ -26,8 +26,7 @@ from app.tracing.trace_store import save_trace
 EXECUTION_TIMEOUT_SECONDS = 10
 
 
-async def execute_run(db: AsyncSession, run: RunModel, options: ExecutionOptions | None = None) -> RunModel:
-    options = options or ExecutionOptions()
+async def execute_run(db: AsyncSession, run: RunModel, options: ExecutionOptions | None = None, playback=None) -> RunModel:
     agent = await db.get(AgentModel, run.agent_id)
     case = await db.get(TestCaseModel, run.test_case_id)
     if agent is None or case is None:
@@ -36,8 +35,9 @@ async def execute_run(db: AsyncSession, run: RunModel, options: ExecutionOptions
         raise HTTPException(409, "Agent is not active")
     if agent.endpoint != support.ENDPOINT:
         raise HTTPException(422, "Unsupported adapter; use builtin://support")
-    if agent.version != support.VERSION or run.agent_version != support.VERSION:
-        raise HTTPException(409, "This adapter only executes version 1.0.0")
+    if agent.version not in support.VERSIONS or run.agent_version != agent.version:
+        raise HTTPException(409, "Run version must match a registered executable adapter version")
+    options = options or ExecutionOptions(retry=RetryPolicy(max_attempts=support.VERSIONS[agent.version]['default_attempts']))
     # Conditional update prevents concurrent requests from executing a run twice.
     result = await db.execute(update(RunModel).where(
         RunModel.id == run.id, RunModel.status == "queued"
@@ -53,9 +53,14 @@ async def execute_run(db: AsyncSession, run: RunModel, options: ExecutionOptions
                                    "test_case_snapshot": snapshot_case(case),
                                    "execution_options": options.model_dump(),
                                    "chaos_engine_version": ENGINE_VERSION,
-                                   "runtime_version": support.RUNTIME_VERSION}) as root:
+                                   "runtime_version": support.RUNTIME_VERSION,
+                                   "provenance": support.PROVENANCE,
+                                   "version_config": support.VERSIONS[agent.version],
+                                   "replay": ({k:v for k,v in playback.snapshot.items() if k != "records"} if playback else None)}) as root:
             async with asyncio.timeout(EXECUTION_TIMEOUT_SECONDS):
-                root.output = await support.execute(case.input, tracer, options)
+                root.output = await support.execute(case.input, tracer, options, agent.version, playback)
+                if playback is not None:
+                    playback.assert_consumed()
     except Exception as exc:
         run.status = "failed"
         run.error = f"{type(exc).__name__}: {exc}"

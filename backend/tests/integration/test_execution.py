@@ -138,6 +138,9 @@ async def test_restart_and_concurrent_execution(tmp_path):
         campaign_response = await client.post('/api/v1/chaos/campaigns', json={'faults':['tool_timeout']})
         assert campaign_response.status_code == 201
         saved_campaign = campaign_response.json()
+        comparison_response = await client.post('/api/v1/regressions/compare', json={})
+        assert comparison_response.status_code == 201
+        saved_comparison = comparison_response.json()
     await engine.dispose()
     # Recreate the engine and application against the existing file.
     engine = create_engine_from_url(url)
@@ -149,6 +152,7 @@ async def test_restart_and_concurrent_execution(tmp_path):
         assert (await client.get(f"/api/v1/runs/{run['id']}/evaluations")).json() == saved_evaluation
         assert (await client.get(f"/api/v1/runs/{run['id']}/diagnosis")).json() == saved_diagnosis
         assert (await client.get('/api/v1/chaos/campaigns/' + saved_campaign['id'])).json() == saved_campaign
+        assert (await client.get('/api/v1/regressions/reports/' + saved_comparison['id'])).json() == saved_comparison
     await engine.dispose()
 
 

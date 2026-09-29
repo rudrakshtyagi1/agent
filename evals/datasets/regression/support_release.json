@@ -1,0 +1,11 @@
+{
+  "version": "support-release/1.0.0",
+  "description": "Five deterministic release fixtures, not a representative production benchmark.",
+  "cases": [
+    {"id":"eligible","name":"Eligible at 12 days","order_id":"ORD-1001","eligible":true,"tags":["eligible","standard"]},
+    {"id":"expired","name":"Expired at 45 days","order_id":"ORD-1002","eligible":false,"tags":["ineligible","standard"]},
+    {"id":"boundary_inclusive","name":"Eligible on day 30","order_id":"ORD-1003","eligible":true,"tags":["eligible","boundary"]},
+    {"id":"boundary_expired","name":"Expired on day 31","order_id":"ORD-1004","eligible":false,"tags":["ineligible","boundary"]},
+    {"id":"transient_timeout","name":"Recover from transient order timeout","order_id":"ORD-1001","eligible":true,"tags":["eligible","resilience"],"fault":"tool_timeout"}
+  ]
+}

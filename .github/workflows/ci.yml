@@ -17,3 +17,11 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci --prefix frontend
       - run: npm run build --prefix frontend
+      - name: Compare agent versions and enforce release gate
+        run: python scripts/check_release.py --output release-report.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: agentguard-release-report
+          path: release-report.json
+          if-no-files-found: warn

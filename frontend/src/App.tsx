@@ -4,6 +4,7 @@ import { api, demoRun, Run, Span, Trace } from "./services/api";
 import EvaluationPanel from "./components/EvaluationPanel";
 import EvaluationStudio from "./pages/EvaluationStudio";
 import ChaosLab from "./pages/ChaosLab";
+import RegressionLab from "./pages/RegressionLab";
 import FailureLab from "./pages/FailureLab";
 import DiagnosisPanel from "./components/DiagnosisPanel";
 
@@ -138,10 +139,16 @@ export default function App() {
         >
           ⌕ &nbsp; Failure lab
         </button>
+        <button
+          className={`nav ${page === "regressions" ? "active" : ""}`}
+          onClick={() => setPage("regressions")}
+        >
+          ⇄ &nbsp; Regression lab
+        </button>
         <div className="sidebar-note">
           <span className="dot" /> Local development
           <br />
-          <small>Phase 05 · Failure intelligence</small>
+          <small>Phase 06 · Release confidence</small>
         </div>
       </aside>
       <main>
@@ -154,13 +161,16 @@ export default function App() {
           <button onClick={() => setPage("evaluations")}>Evaluations</button>
           <button onClick={() => setPage("chaos")}>Chaos lab</button>
           <button onClick={() => setPage("failures")}>Failure lab</button>
+          <button onClick={() => setPage("regressions")}>Regression lab</button>
         </div>
         {page !== "traces" && error && (
           <div className="error" role="alert">
             {error}
           </div>
         )}
-        {page === "failures" ? (
+        {page === "regressions" ? (
+          <RegressionLab onRun={inspectRun} />
+        ) : page === "failures" ? (
           <FailureLab onRun={inspectRun} />
         ) : page === "chaos" ? (
           <ChaosLab onRun={inspectRun} />

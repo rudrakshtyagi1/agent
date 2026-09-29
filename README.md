@@ -1,10 +1,10 @@
 # AgentGuard
 
 AgentGuard is a testing and observability platform for multi-step AI agents.
-Phase 5 includes an executable offline support agent, persisted nested traces,
+Phase 6 includes an executable offline support agent, persisted nested traces,
 a React trace explorer, a versioned evaluation engine, and paired chaos campaigns
 with bounded retries, plus evidence-based failure diagnosis and symptom grouping.
-Regression gates and live monitoring follow in later phases; see [ROADMAP.md](ROADMAP.md).
+Paired regression gates and strict recorded-response replay are available. Live monitoring is next; see [ROADMAP.md](ROADMAP.md).
 
 ## Run locally
 
@@ -349,3 +349,59 @@ findings use the existing `failures` table. No existing records need deletion.
 The local service remains unauthenticated and the entire analysis request uses
 a database transaction. Durable workers, production monitoring, and general
 LLM-based investigation are outside this phase.
+
+## Phase 6: regression gates and recorded playback
+
+Regression Lab executes baseline and candidate versions against the same five
+frozen support cases: ordinary eligibility, expiry, both sides of the 30-day
+boundary, and a transient timeout. Versions are executable configurations:
+`1.0.0` uses one attempt; `1.1.0` uses two; `1.1.0-regression` deliberately uses
+an incorrect 7-day window. With default gates, the improved candidate passes
+5/5 versus baseline 4/5. The faulty candidate passes 2/5 and introduces two
+regressions. These are diagnostic fixtures, not a held-out production benchmark.
+
+Reports persist in the additive `regression_reports` table. They include paired
+run IDs, per-case changes, overlapping slices, evaluation/expectation compatibility,
+dataset SHA-256, runtime/model/prompt/tool versions, execution options and gate
+checks. Missing or incompatible task measurements block a release. Defaults
+require five measured pairs, no regressions and 100% candidate task success.
+Optional mean latency increase checks require complete latency measurements;
+single-run fixture timings are noisy. The illustrative 95% Hoeffding interval
+assumes independent representative cases; this fixed suite does not establish
+population reliability. It is shown as context and is not a gate criterion.
+
+```bash
+# No running server required; creates an isolated temporary SQLite database.
+python scripts/check_release.py --output release-report.json
+# Expected rejection (exit 1):
+python scripts/check_release.py --candidate-version 1.1.0-regression --output rejected-report.json
+```
+
+CLI exit codes: **0** accepted, **1** failed/blocked, **2** execution/configuration
+error. `--max-regressions` and `--min-success-rate` configure the CLI gate.
+GitHub Actions runs the default gate and uploads its JSON report. CLI run IDs
+refer to the temporary database, which is removed afterward; use API/dashboard
+comparisons for retained traces. The JSON embeds evaluation and fault evidence.
+
+API endpoints:
+
+- `GET /api/v1/regressions/versions`: executable version registry and provenance.
+- `POST /api/v1/regressions/compare`: `baseline_version`, `candidate_version`,
+  and `gate` (`max_regressions`, `min_task_success_rate`, `min_measured_cases`,
+  optional `max_mean_latency_increase_ms`). Returns a saved report.
+- `GET /api/v1/regressions/reports` and `/reports/{id}`: history and full report.
+- `POST /api/v1/runs/{id}/replay`: `{"candidate_version":"1.1.0"}` creates a new
+  execution using the source trace's frozen input and recorded retrieval/tool
+  outputs and supported errors. It matches ordered call names and inputs exactly.
+  Missing, mismatched or unconsumed responses fail explicitly; there is no fallback
+  to fixture or external calls. Candidate answer generation executes again;
+  model randomness and original timings are not reproduced. Each replay boundary
+  links its original span, and root metadata saves source IDs and snapshot hash.
+
+A source that failed after one timeout cannot supply an improved candidate's
+additional retry: strict playback fails in that case. Run a paired comparison
+to measure recovery with fresh fixture responses. Playback supports only the
+built-in support agent's complete, recognized boundary records. Existing legacy
+traces without frozen inputs are rejected. Ordinary execution with no options
+body uses the selected version's retry profile; explicit options (including `{}`)
+use the supplied policy/defaults, which can override that profile.
