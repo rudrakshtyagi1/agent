@@ -13,6 +13,7 @@ Responsibilities:
 from __future__ import annotations
 
 import logging
+import asyncio
 from contextlib import asynccontextmanager
 from typing import Any
 
@@ -45,9 +46,20 @@ async def lifespan(app: FastAPI):
     await init_db()
     logger.info("Database ready.")
 
-    yield  # Application runs here
+    from app.db import session as database
+    from app.monitoring.service import worker
 
-    await close_db()
+    stop = asyncio.Event()
+    app.state.monitor_health = {"last_success": None, "error": None}
+    task = asyncio.create_task(
+        worker(database._session_factory, settings, stop, app.state.monitor_health)
+    )
+    try:
+        yield
+    finally:
+        stop.set()
+        await task
+        await close_db()
     logger.info("Shutdown complete.")
 
 
@@ -59,6 +71,9 @@ async def lifespan(app: FastAPI):
 def create_app() -> FastAPI:
     """Construct and configure the FastAPI application."""
     settings = get_settings()
+    from app.monitoring.security import validate_keys
+
+    validate_keys(settings)
 
     app = FastAPI(
         title=settings.app_name,
@@ -88,20 +103,48 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    from app.monitoring.middleware import MonitoringBoundary
+
+    app.add_middleware(MonitoringBoundary, settings=settings)
+
+    from fastapi.exceptions import RequestValidationError
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_error(request, exc):
+        # Pydantic errors may echo raw inputs; never return submitted secrets.
+        return JSONResponse(
+            status_code=422,
+            content={
+                "error": "Invalid request",
+                "fields": [list(e["loc"]) for e in exc.errors()],
+            },
+        )
+
     # ------------------------------------------------------------------ #
     # Exception handlers
     # ------------------------------------------------------------------ #
 
     @app.exception_handler(HTTPException)
-    async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
+    async def http_exception_handler(
+        request: Request, exc: HTTPException
+    ) -> JSONResponse:
         return JSONResponse(
             status_code=exc.status_code,
             content={"error": exc.detail, "status_code": exc.status_code},
         )
 
     @app.exception_handler(Exception)
-    async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-        logger.exception("Unhandled exception on %s %s", request.method, request.url.path)
+    async def unhandled_exception_handler(
+        request: Request, exc: Exception
+    ) -> JSONResponse:
+        if request.url.path.startswith(settings.api_v1_prefix + "/monitoring"):
+            logger.error(
+                "Monitoring request failed; details suppressed to protect telemetry"
+            )
+        else:
+            logger.exception(
+                "Unhandled exception on %s %s", request.method, request.url.path
+            )
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"error": "Internal server error", "status_code": 500},

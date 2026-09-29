@@ -29,3 +29,5 @@ from app.db.models.chaos_campaign import ChaosCampaignModel
 from app.db.models.diagnosis import DiagnosisModel
 
 from app.db.models.regression import RegressionReportModel
+
+from app.db.models.monitoring import MonitorTrace, MonitorTenant, MonitorAlert

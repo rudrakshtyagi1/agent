@@ -1,0 +1,22 @@
+{
+  "platform": "Darwin arm64",
+  "python": "3.14.2",
+  "samples": 100,
+  "span_count_per_trace": 2,
+  "bare_median_ms": 0.001708976924419403,
+  "instrumented_median_ms": 0.022687949240207672,
+  "instrumented_p95_ms": 0.04545808769762516,
+  "median_overhead_ms": 0.02097897231578827,
+  "http_admission_median_ms": 2.1538540022447705,
+  "http_admission_p95_ms": 2.857792074792087,
+  "responses": {
+    "queued": 100
+  },
+  "failed_submissions": 0,
+  "unaccepted_spans": 0,
+  "limitations": [
+    "Sequential local HTTP requests; no concurrency/load capacity claim.",
+    "Admission latency ends at durable enqueue, not worker completion.",
+    "Instrumentation sample includes UUIDs/context setup; no LLM calls."
+  ]
+}

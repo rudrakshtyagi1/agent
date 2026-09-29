@@ -25,3 +25,6 @@ v1_router.include_router(chaos.router)
 v1_router.include_router(failures.router)
 
 v1_router.include_router(regressions.router)
+
+from app.api.routes import monitoring
+v1_router.include_router(monitoring.router)

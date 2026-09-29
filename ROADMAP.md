@@ -13,7 +13,7 @@ same dataset. Keep a deterministic offline mode and a real model mode.
 
 ## Current state
 
-Phases 1–6 are implemented: the FastAPI/database foundation now
+Phases 1–7 are implemented as a local portfolio system: the FastAPI/database foundation now
 executes the built-in offline support agent and persists nested spans with
 completed/failed run status. The React trace explorer launches success and
 simulated timeout scenarios and displays timing, inputs, outputs, and errors.
@@ -26,8 +26,8 @@ execution protection, validation failures, and trace ownership checks.
 Execution is request-scoped and bounded to 10 seconds. Status and spans commit
 atomically; the intermediate running state is not exposed to other requests.
 Process termination rolls back the transaction, leaving the original queued
-run for an explicit retry. There is no durable background worker, live stream,
-external trace-ingestion endpoint, OpenTelemetry export, or automatic redaction.
+run for an explicit retry. The external monitoring pipeline has a durable inbox and background worker.
+There is no live span stream or OpenTelemetry export.
 The demo uses fixture data and a template model; real LLM/RAG integrations and
 general semantic evaluation are future work. Do not use the unauthenticated local API publicly.
 
@@ -47,7 +47,11 @@ recovery and task outcomes, evidence navigation, and exact symptom grouping.
 Failure Lab can analyze recent runs and run a blinded nine-fixture audit that
 removes injector labels before classification. Phase 6 adds paired version comparisons, persisted slice reports, fail-closed
 release gates, an offline CI command, and strict recorded boundary playback.
-The next milestone is live monitoring and production hardening. General LLM investigation and
+Phase 7 adds tenant-key authenticated external ingestion, a durable bounded inbox,
+head sampling, retention, default payload minimization, dashboard alerts, a Python
+SDK, and a local overhead measurement. It supports one API process, not distributed
+workers. The seven-phase portfolio milestone is complete; deployment operations,
+real-provider evaluation calibration and scale validation remain future work. General LLM investigation and
 embedding-based clustering are not implemented or claimed.
 
 ## Build order and acceptance criteria

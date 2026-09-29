@@ -956,7 +956,8 @@ footer {
     grid-template-columns: 1fr;
   }
 }
-.release-controls select, .release-history select {
+.release-controls select,
+.release-history select {
   background: #101821;
   color: #edf4f8;
   border: 1px solid #2b3a47;
@@ -964,4 +965,8 @@ footer {
   border-radius: 6px;
   max-width: 100%;
   width: 100%;
+}
+.monitor-alert {
+  padding: 18px 0;
+  border-top: 1px solid #283540;
 }

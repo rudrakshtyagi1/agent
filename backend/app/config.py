@@ -77,6 +77,18 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------------ #
     # Computed helpers
     # ------------------------------------------------------------------ #
+    # One API process/worker is supported; inbox rows survive restarts.
+    monitor_keys: dict[str, str] = Field(default_factory=dict, repr=False)
+    monitor_capture_payloads: bool = False
+    monitor_queue_capacity: int = Field(default=1000, ge=1, le=100000)
+    monitor_sample_rate: float = Field(default=1.0, ge=0, le=1, allow_inf_nan=False)
+    monitor_retention_days: int = Field(default=7, ge=1, le=365)
+    monitor_poll_seconds: float = Field(default=1, ge=0.05, le=60)
+    monitor_window: int = Field(default=50, ge=5, le=500)
+    monitor_min_samples: int = Field(default=5, ge=1, le=500)
+    monitor_failure_rate: float = Field(default=0.2, gt=0, le=1, allow_inf_nan=False)
+    monitor_latency_ms: int = Field(default=5000, ge=1)
+
     @property
     def is_production(self) -> bool:
         """Return True when running in production environment."""

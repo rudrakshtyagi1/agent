@@ -4,12 +4,15 @@ import { api, demoRun, Run, Span, Trace } from "./services/api";
 import EvaluationPanel from "./components/EvaluationPanel";
 import EvaluationStudio from "./pages/EvaluationStudio";
 import ChaosLab from "./pages/ChaosLab";
+import Monitoring from "./pages/Monitoring";
 import RegressionLab from "./pages/RegressionLab";
 import FailureLab from "./pages/FailureLab";
 import DiagnosisPanel from "./components/DiagnosisPanel";
 
+const monitorOnly = import.meta.env.VITE_MONITOR_ONLY === "true";
+
 export default function App() {
-  const [page, setPage] = useState("traces");
+  const [page, setPage] = useState(monitorOnly ? "monitoring" : "traces");
   const [runs, setRuns] = useState<Run[]>([]);
   const [run, setRun] = useState<Run | null>(null);
   const [trace, setTrace] = useState<Trace | null>(null);
@@ -23,7 +26,7 @@ export default function App() {
     setRuns(await api<Run[]>("/runs?limit=100"));
   }
   useEffect(() => {
-    refresh().catch((e) => setError(e.message));
+    if (!monitorOnly) refresh().catch((e) => setError(e.message));
   }, []);
   async function select(next: Run, evidenceId?: string) {
     const ticket = ++selection.current;
@@ -115,60 +118,84 @@ export default function App() {
           ◈ <span>AgentGuard</span>
         </a>
         <div className="workspace">ENGINEERING WORKSPACE</div>
+        {!monitorOnly && (
+          <>
+            <button
+              className={`nav ${page === "traces" ? "active" : ""}`}
+              onClick={() => setPage("traces")}
+            >
+              ⌁ &nbsp; Trace explorer
+            </button>
+            <button
+              className={`nav ${page === "evaluations" ? "active" : ""}`}
+              onClick={() => setPage("evaluations")}
+            >
+              ◎ &nbsp; Evaluation studio
+            </button>
+            <button
+              className={`nav ${page === "chaos" ? "active" : ""}`}
+              onClick={() => setPage("chaos")}
+            >
+              ϟ &nbsp; Chaos lab
+            </button>
+            <button
+              className={`nav ${page === "failures" ? "active" : ""}`}
+              onClick={() => setPage("failures")}
+            >
+              ⌕ &nbsp; Failure lab
+            </button>
+            <button
+              className={`nav ${page === "regressions" ? "active" : ""}`}
+              onClick={() => setPage("regressions")}
+            >
+              ⇄ &nbsp; Regression lab
+            </button>
+          </>
+        )}
         <button
-          className={`nav ${page === "traces" ? "active" : ""}`}
-          onClick={() => setPage("traces")}
+          className={`nav ${page === "monitoring" ? "active" : ""}`}
+          onClick={() => setPage("monitoring")}
         >
-          ⌁ &nbsp; Trace explorer
-        </button>
-        <button
-          className={`nav ${page === "evaluations" ? "active" : ""}`}
-          onClick={() => setPage("evaluations")}
-        >
-          ◎ &nbsp; Evaluation studio
-        </button>
-        <button
-          className={`nav ${page === "chaos" ? "active" : ""}`}
-          onClick={() => setPage("chaos")}
-        >
-          ϟ &nbsp; Chaos lab
-        </button>
-        <button
-          className={`nav ${page === "failures" ? "active" : ""}`}
-          onClick={() => setPage("failures")}
-        >
-          ⌕ &nbsp; Failure lab
-        </button>
-        <button
-          className={`nav ${page === "regressions" ? "active" : ""}`}
-          onClick={() => setPage("regressions")}
-        >
-          ⇄ &nbsp; Regression lab
+          ◉ &nbsp; Live monitoring
         </button>
         <div className="sidebar-note">
-          <span className="dot" /> Local development
+          <span className="dot" />{" "}
+          {monitorOnly ? "Monitoring workspace" : "Local development"}
           <br />
-          <small>Phase 06 · Release confidence</small>
+          <small>Phase 07 · Live monitoring</small>
         </div>
       </aside>
       <main>
         <header>
           <div className="eyebrow">OBSERVABILITY / EXECUTIONS</div>
-          <span className="badge">OFFLINE DEMO</span>
+          <span className="badge">
+            {page === "monitoring" ? "EXTERNAL TELEMETRY" : "OFFLINE DEMO"}
+          </span>
         </header>
         <div className="mobile-nav">
-          <button onClick={() => setPage("traces")}>Traces</button>
-          <button onClick={() => setPage("evaluations")}>Evaluations</button>
-          <button onClick={() => setPage("chaos")}>Chaos lab</button>
-          <button onClick={() => setPage("failures")}>Failure lab</button>
-          <button onClick={() => setPage("regressions")}>Regression lab</button>
+          {!monitorOnly && (
+            <>
+              <button onClick={() => setPage("traces")}>Traces</button>
+              <button onClick={() => setPage("evaluations")}>
+                Evaluations
+              </button>
+              <button onClick={() => setPage("chaos")}>Chaos lab</button>
+              <button onClick={() => setPage("failures")}>Failure lab</button>
+              <button onClick={() => setPage("regressions")}>
+                Regression lab
+              </button>
+            </>
+          )}
+          <button onClick={() => setPage("monitoring")}>Monitoring</button>
         </div>
         {page !== "traces" && error && (
           <div className="error" role="alert">
             {error}
           </div>
         )}
-        {page === "regressions" ? (
+        {page === "monitoring" ? (
+          <Monitoring />
+        ) : page === "regressions" ? (
           <RegressionLab onRun={inspectRun} />
         ) : page === "failures" ? (
           <FailureLab onRun={inspectRun} />
@@ -416,8 +443,9 @@ export default function App() {
           </>
         )}
         <footer>
-          Stored traces survive server restarts. Demo responses are generated
-          from templates; no LLM is called.
+          {page === "monitoring"
+            ? "External traces persist until retention expiry. Execution health does not establish answer correctness."
+            : "Stored traces survive server restarts. Demo responses are generated from templates; no LLM is called."}
         </footer>
       </main>
     </div>

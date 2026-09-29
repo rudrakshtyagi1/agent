@@ -1,10 +1,10 @@
 # AgentGuard
 
 AgentGuard is a testing and observability platform for multi-step AI agents.
-Phase 6 includes an executable offline support agent, persisted nested traces,
+Phase 7 includes an executable offline support agent, persisted nested traces,
 a React trace explorer, a versioned evaluation engine, and paired chaos campaigns
 with bounded retries, plus evidence-based failure diagnosis and symptom grouping.
-Paired regression gates and strict recorded-response replay are available. Live monitoring is next; see [ROADMAP.md](ROADMAP.md).
+Paired regression gates and strict recorded-response replay are available. External telemetry and live monitoring are available; see [ROADMAP.md](ROADMAP.md).
 
 ## Run locally
 
@@ -405,3 +405,115 @@ built-in support agent's complete, recognized boundary records. Existing legacy
 traces without frozen inputs are rejected. Ordinary execution with no options
 body uses the selected version's retry profile; explicit options (including `{}`)
 use the supplied policy/defaults, which can override that profile.
+
+## Phase 7: external telemetry and live monitoring
+
+Live Monitoring receives completed traces from external Python agents, processes
+an authenticated durable inbox, and displays execution health and alert history.
+The Python SDK wraps **your existing calls**; it does not replace your agent or
+require an LLM provider. The demonstration records actual file retrieval and
+hashing, with a deliberately raised tool exception every third run:
+
+```bash
+pip install -e ./sdk
+python scripts/send_monitor_demo.py --count 6
+# For authenticated servers, set AGENTGUARD_API_KEY in your shell first.
+```
+
+Open **Live monitoring** in the dashboard. Six demo submissions generate an
+execution failure-rate alert (2/6) after the worker processes them. Alert evidence
+opens the external trace and its nested spans. The page refreshes every three
+seconds and supports pause/resume. API keys remain in component memory, never
+localStorage. For an existing agent, use `Trace` and `trace.span()` around its
+planner/retrieval/model/tool steps, then explicitly call `trace.export()` after
+all spans close. See [sdk/agentguard](sdk/agentguard/__init__.py). Async callers
+should move the blocking exporter to a thread. Capture token counts by assigning
+`input_tokens` and `output_tokens` on each model span; incomplete coverage stays
+unavailable. Execution status is producer-reported; it is **not task success**.
+
+### Ingestion and worker contract
+
+- `POST /api/v1/monitoring/traces` accepts one completed, single-root tree (up to
+  200 spans and 512 KiB). UUIDs, timezone-aware timestamps, parent references,
+  cycles and child timing are validated. No arbitrary endpoint is executed.
+- A 202 response with `queued` means the minimized trace has committed to the
+  database inbox. `sampled_out` means the configured deterministic head sampler
+  intentionally omitted it. This is not a worker-completion response.
+- Retries with the same tenant/trace ID and identical **retained** content return
+  the existing record; changed retained content returns 409. Idempotency lasts
+  until retention deletion. Capacity exhaustion returns 429; the sender should
+  retry with the same ID. The SDK retries network errors, 429 and 5xx at most
+  three times by default, never follows redirects, and raises `ExportError` on
+  exhaustion. The caller owns durable sender-side buffering; it must retain a
+  failed Trace if it wants to retry later.
+- One lifespan worker processes at most 25 rows per transaction. Queue rows
+  survive restarts; summary/alert updates commit atomically. Unexpected processing
+  failures leave the queue for retry and appear in worker health. Invalid stored
+  rows become visible dead letters. A single process lock serializes admission
+  and worker transactions. **Run exactly one API worker/process.** Multi-process
+  claiming, distributed queues and horizontal scaling are not implemented.
+- Pending capacity is global, while all reads/writes and alerts are tenant-scoped.
+  Counters show accepted traces, sampled-out/rejected *submissions*, and their
+  omitted spans; retrying a rejected submission can increment these counters
+  again. They do not claim unique permanently lost traces. HTTP/auth/validation
+  rejections and sender-side failures are not included in those counters.
+- Retention deletes old inbox/processed/dead-letter rows and old alert records
+  using server ingestion time. Default: seven days. Pending rows can also expire.
+  Aggregate admission counters remain. Backup deletion is an operator concern.
+
+`GET /api/v1/monitoring/overview`, `/traces`, `/traces/{id}` and `/alerts` expose
+only the authenticated tenant. Detail IDs are server-generated IDs returned on
+admission. External telemetry lives in separate additive tables; it never enters
+the development-only unscoped run/evaluation APIs.
+
+### Authentication, privacy, and deployment
+
+Set `APP_ENV=staging` or `production` and `MONITOR_KEYS` to a JSON mapping of tenant
+names to unique random bearer keys (at least 32 characters each). Generate each
+key with `python -c 'import secrets; print(secrets.token_urlsafe(32))'` and store
+it in your deployment secret manager. Send `Authorization: Bearer <key>`.
+The server derives tenant scope from the key; clients cannot choose a tenant in
+trace JSON. Invalid/missing keys get 401, cross-tenant detail IDs get 404. Keys
+permit both ingestion and reading within one tenant; fine-grained RBAC and a key
+management UI are not implemented. Rotate/revoke by changing the mapping and
+restarting. In development only, an empty mapping enables the `local-demo` tenant.
+
+Outside development, all legacy demo endpoints and API docs are disabled.
+Health and authenticated monitoring remain available. Build the dashboard with
+`VITE_MONITOR_ONLY=true npm --prefix frontend run build` to hide demo navigation
+and open monitoring directly. Serve this static build and proxy `/api/v1/monitoring`
+to the backend under the same HTTPS origin. Use one uvicorn worker, a persistent
+database volume, TLS at the reverse proxy, request timeouts and per-key/IP rate
+limits at the ingress. These deployment components are not provisioned here.
+SQLite is tested; PostgreSQL configuration exists but this monitoring milestone
+has not been load-tested or validated against PostgreSQL.
+
+Payload capture defaults **off on both SDK and server**. Inputs, outputs and
+metadata are discarded before storage; error text is replaced with a generic
+marker. When explicitly enabled on both, recursive filtering removes known
+sensitive keys, email addresses, common phone patterns and token strings before
+persistence. This is best-effort pattern filtering, not a PII guarantee. Never
+put secrets in agent/span names or identifiers. Validation responses do not echo
+submitted values; monitoring errors suppress exception payloads in application
+logs. Do not enable raw request logging at your proxy.
+
+### Alerts and measurements
+
+Each agent/version/environment has a trailing window of up to 50 retained
+executions, ordered by server ingestion time. With at least five observations,
+failure rate ≥20% or nearest-rank p95 latency ≥5000ms opens an alert. Repeated
+polls update evidence without duplicate alerts. Crossing below threshold resolves
+it; disappearing/insufficient retained evidence closes it as `insufficient_data`,
+not as recovery. Re-breaches create new alert records. No email/webhook is sent.
+These are dashboard alerts with bounded recent evidence, not a paging system.
+Head sampling can miss failures and bias small samples; metrics describe retained
+producer-reported executions only. Old low-volume windows remain active until
+retention expiry. Timing assumes a consistent producer clock.
+
+Run `python scripts/benchmark_monitoring.py --count 100` against the local server.
+The [recorded local measurement](docs/benchmarks/monitoring-local.json) used 100
+sequential two-span submissions on macOS arm64: median instrumentation overhead
+about **0.021ms**, median HTTP durable admission **2.15ms**, p95 **2.86ms**, zero
+unaccepted spans in that run. All 106 demo/benchmark traces were subsequently
+processed. This small local experiment measures admission separately from worker
+completion; it does not establish production throughput or scalability.
