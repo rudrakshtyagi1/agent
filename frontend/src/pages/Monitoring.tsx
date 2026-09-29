@@ -388,8 +388,10 @@ python scripts/run_groq_support.py --limit 1 --max-requests 4 --export`}</pre>
         <p>
           Look for groq-support in the traces above. Answers and evaluation
           checks are saved to artifacts/groq-support-report.json. Provider
-          quotas produce unavailable measurements; no paid fallback is used.
-          Live model behavior has not yet been verified.
+          quotas produce unavailable measurements; no paid fallback is used. A
+          bounded live smoke test and transient-timeout recovery comparison
+          passed. These small synthetic experiments do not establish production
+          reliability.
         </p>
         <h2>Connect a Python agent</h2>
         <p>

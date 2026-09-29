@@ -130,7 +130,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--model", default=DEFAULT_MODEL)
-    parser.add_argument("--split", choices=["dev", "holdout"], default="dev")
+    parser.add_argument(
+        "--split", choices=["dev", "holdout", "regression"], default="dev"
+    )
     parser.add_argument("--limit", type=int, choices=range(1, 6), default=1)
     parser.add_argument("--compare", action="store_true")
     parser.add_argument("--max-requests", type=int, choices=range(1, 13), default=4)

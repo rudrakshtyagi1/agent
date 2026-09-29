@@ -518,14 +518,20 @@ unaccepted spans in that run. All 106 demo/benchmark traces were subsequently
 processed. This small local experiment measures admission separately from worker
 completion; it does not establish production throughput or scalability.
 
-## Next milestone: a real Groq agent
+## Real Groq agent: initial live validation
 
 A bounded Groq integration is now implemented with local BM25 policy retrieval,
 model-directed read-only tools, SDK traces, provider token usage, draft dev/holdout
-cases and explicit comparison reports. **Live API validation is pending a fresh
-local key; offline contract tests do not establish model quality.**
+cases and explicit comparison reports. **The live smoke test passed, and a paired
+transient-timeout experiment showed the baseline failing while the grounded agent
+recovered.** These small synthetic runs do not establish general model quality.
 
 Start with `python scripts/run_groq_support.py --dry-run`, then follow the
-[real-agent experiment guide](docs/REAL_AGENT_DEMO.md) for the fresh-key smoke test,
+[real-agent experiment guide](docs/REAL_AGENT_DEMO.md) for setup, recorded live results,
 transient-failure recovery comparison and evaluation limits. No provider key is
 needed for the normal CI test suite.
+
+Live validation includes the initial boundary failure, two provider-error attempts,
+and the passing runtime 1.2.0 regression and recovery comparison. See the
+[recorded experiment evidence](docs/benchmarks/groq-live-validation.json); four
+untouched holdout cases remain for later evaluation.

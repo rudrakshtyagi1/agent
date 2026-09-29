@@ -79,7 +79,17 @@ async def test_real_tool_loop_usage_and_no_reasoning_or_credentials_in_trace():
         "search_policy",
         "lookup_order",
     ]
-    assert requests[-1]["messages"][-1]["role"] == "tool"
+    assert requests[-1]["messages"][-1]["role"] == "user"
+    final_evidence = json.loads(requests[-1]["messages"][-1]["content"])
+    assert final_evidence["order"]["order_id"] == "DEMO-001"
+    assert "expected_decision" not in final_evidence
+    assert all(m["role"] != "tool" for m in requests[-1]["messages"])
+    assert requests[0]["tool_choice"] == "auto"
+    assert requests[-1]["tool_choice"] == "none"
+    assert requests[-1]["response_format"] == {"type": "json_object"}
+    assert "tools" not in requests[-1]
+    assert "parallel_tool_calls" not in requests[-1]
+    assert result["provenance"]["runtime_version"] == "groq-support-runtime/1.2.0"
     assert "refund-policy-v2" in requests[1]["messages"][-1]["content"]
     serialized = json.dumps(trace.payload())
     assert "never store this" not in serialized and "test-only-key" not in serialized
@@ -193,7 +203,10 @@ def test_holdout_split_disjoint_and_comparison_excludes_missing_measurements():
     )
     dev = {c["id"] for c in dataset["cases"] if c["split"] == "dev"}
     holdout = {c["id"] for c in dataset["cases"] if c["split"] == "holdout"}
-    assert not dev & holdout and len(dev) == 2 and len(holdout) == 5
+    assert not dev & holdout and len(dev) == 2 and len(holdout) == 4
+    assert {c["id"] for c in dataset["cases"] if c["split"] == "regression"} == {
+        "holdout-inclusive"
+    }
     report = summarize(
         [
             {
@@ -268,3 +281,15 @@ async def test_cli_dry_run_never_loads_credentials_and_live_report_is_explicit(
     }
     assert "test-only-key" not in Path(args.output).read_text()
     # 'live' identifies the command path; this test still uses mocked HTTP.
+
+
+@pytest.mark.asyncio
+async def test_final_generation_rejects_unexpected_tool_calls():
+    replies = sequence()
+    replies[-1] = reply([tc("search_policy", {"query": "refund"}, "call-3")])
+    _, result, requests = await execute(replies)
+    assert requests[-1]["tool_choice"] == "none"
+    assert result["status"] == "failed" and result["failure_kind"] == "provider"
+    assert (
+        len(result["tool_calls"]) == 2
+    )  # The unexpected third call is never executed.

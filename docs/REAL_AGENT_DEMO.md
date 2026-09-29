@@ -2,10 +2,12 @@
 
 ## Status
 
-The real HTTP integration, local retrieval/tool orchestration and offline contract
-tests are implemented. **Live provider behavior and model quality are not yet
-verified.** Test responses are scripted; they are not benchmark results. A fresh
-local credential is required for the first live smoke run.
+The real HTTP integration has passed a bounded live smoke test and a paired
+transient-timeout recovery test using `qwen/qwen3.8-27b`. The normal case passed;
+under the same injected timeout, baseline failed and grounded recovered with one
+local retry. These are actual provider runs, separate from the scripted HTTP tests.
+They validate this small workflow, not general model quality or production reliability.
+See the recorded results below for exact scope and limitations.
 
 The order database is synthetic. The model inference is real when you run the live
 command. Retrieval uses a small local corpus with title-boosted BM25; no embedding
@@ -57,6 +59,9 @@ python scripts/run_groq_support.py --limit 1 --max-requests 4 --export
 The default case uses synthetic order `DEMO-001` and the grounded agent version.
 Typical flow: search policy → read order → generate structured answer. The actual
 sequence is selected by the model, so fewer/more calls and failures are possible.
+Grounded runtime 1.2.0 switches to a separate tool-free JSON-generation phase once
+it has the requested order and refund-policy evidence. This phase receives only
+the question and collected evidence, never evaluation labels or tool-call history.
 
 Budgets: four agent turns, six local tool requests, at most four provider requests
 by default, 512 maximum completion tokens per request, eight seconds between
@@ -107,8 +112,9 @@ scoped answer checks.
 
 ## 4. Evaluate without overstating the result
 
-`evals/datasets/real_support/cases.json` has two development cases and five separately
-marked holdout cases. Cases include the inclusive boundary, the day after it,
+`evals/datasets/real_support/cases.json` version 1.1.0 has two development cases,
+four untouched holdout cases and one regression case. The original inclusive-boundary
+holdout was moved to regression after its live failure informed an orchestration fix. Cases include the inclusive boundary, the day after it,
 final-sale exceptions, undelivered orders and unknown IDs. Labels are drafts from
 our synthetic policy, **not independently reviewed**. No expected labels are passed
 to the agent. Avoid tuning on holdout outputs; if you do, create a fresh holdout.
@@ -120,7 +126,7 @@ python scripts/run_groq_support.py --split holdout --limit 1 \
   --max-requests 4 --output artifacts/groq-holdout-smoke.json
 ```
 
-Keep runs small on the free tier. A full five-case comparison can exceed the
+Keep runs small on the free tier. A full four-case holdout comparison can exceed the
 maximum 12-request budget; reports explicitly mark partial comparisons. Shared
 request budgets include both versions, and order alternates between cases. Do not
 compare different sampled subsets as though they were paired.
@@ -131,9 +137,41 @@ is grounded. Provider failures are **unmeasured**, excluded from paired outcome
 counts and cause the overall experiment to fail closed. No statistical reliability
 claim should be made from this small, synthetic, single-pass dataset.
 
+## Recorded live results (2026-09-29)
+
+[Machine-readable results](benchmarks/groq-live-validation.json) retain all seven
+experiments, provenance, deterministic checks and persisted monitoring summaries.
+
+| Experiment | Outcome | Provider requests | Reported tokens |
+| --- | --- | ---: | ---: |
+| Initial smoke | Grounded passed | 4 | 3,661 |
+| Initial transient timeout pair | Baseline failed; grounded passed | 5 | 4,184 |
+| Original boundary holdout | Turn budget exhausted | 4 | 3,474 |
+| First final-generation fix | HTTP 400; unmeasured | 4 | Unknown |
+| Second final-generation fix | HTTP 400; unmeasured | 4 | Unknown |
+| Boundary regression, runtime 1.2.0 | Passed, day 30 eligible | 4 | 2,863 |
+| Final transient timeout pair, runtime 1.2.0 | Baseline failed; grounded passed | 4 | 2,468 |
+
+One additional diagnostic request returned `json_validate_failed`; its token usage
+is unknown. Provider-error runs do not represent measured answer failures. The
+boundary failure exposed repeated retrieval consuming the turn budget. Runtime
+1.2.0 separates evidence collection from final JSON generation. Both intermediate
+fixes and their failures remain in the record. This boundary rerun is a regression,
+not an untouched holdout result. The four remaining holdout cases have not run.
+
+The final recovered trace was persisted with 11 spans, one failed order attempt,
+a retry, a successful second attempt and 1,945 reported model tokens. Its root
+completed; answer checks passed separately. Trace IDs refer to the local database
+and its retention policy; the linked result file retains the measured summaries.
+
+```bash
+python scripts/run_groq_support.py --split regression --limit 1 \
+  --max-requests 4 --export
+```
+
 ## Next steps requiring evidence or access
 
-1. Run and record the fresh-key smoke test; inspect real provider responses.
+1. Repeat the recorded demo when needed; keep provider runs bounded.
 2. Review expected labels independently and expand the corpus/cases from a real use case.
 3. Record paired results without changing the holdout; document failures, not just successes.
 4. Validate deployment/load behavior before a hosted demo; hosting needs account access.

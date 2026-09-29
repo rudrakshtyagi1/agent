@@ -51,7 +51,7 @@ class GroqClient:
         self._last = 0
         self._client = client
 
-    async def complete(self, messages, tools, trace):
+    async def complete(self, messages, tools, trace, allow_tools=True):
         if len(json.dumps(messages)) > 24000:
             raise BudgetExceeded("Conversation exceeds the input character budget")
         if self.requests >= self.max_requests:
@@ -78,6 +78,13 @@ class GroqClient:
                 "temperature": 0,
                 "reasoning_format": "hidden",
             }
+            if not allow_tools:
+                # Final JSON generation has no registered tools. Some provider/model
+                # combinations reject JSON mode when tool definitions are present.
+                body.pop("tools")
+                body.pop("parallel_tool_calls")
+                body["tool_choice"] = "none"
+                body["response_format"] = {"type": "json_object"}
             # Do not retry inference transparently: each retry would consume quota.
             try:
                 if self._client is not None:
@@ -114,6 +121,10 @@ class GroqClient:
                     t.type != "function" for t in message.tool_calls
                 ):
                     raise ValueError()
+                if not allow_tools and message.tool_calls:
+                    raise ValueError(
+                        "Provider returned tools when final generation was requested"
+                    )
                 usage = data.get("usage") or {}
                 if not isinstance(usage, dict):
                     raise ValueError()

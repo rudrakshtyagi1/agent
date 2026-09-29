@@ -1,13 +1,78 @@
 {
- "version":"groq-support-cases/1.0.0",
- "label_status":"Draft synthetic labels authored from the documented policy; not independently reviewed.",
- "cases":[
-  {"id":"dev-eligible","split":"dev","order_id":"DEMO-001","question":"Can I get a refund for my order?","expected_decision":"eligible","expected_citations":["refund-policy-v2"]},
-  {"id":"dev-expired","split":"dev","order_id":"DEMO-002","question":"Is my delivered order still eligible for a return?","expected_decision":"ineligible","expected_citations":["refund-policy-v2"]},
-  {"id":"holdout-inclusive","split":"holdout","order_id":"DEMO-003","question":"Please check whether I can return this purchase today.","expected_decision":"eligible","expected_citations":["refund-policy-v2"]},
-  {"id":"holdout-outside","split":"holdout","order_id":"DEMO-004","question":"Am I still inside the refund eligibility window?","expected_decision":"ineligible","expected_citations":["refund-policy-v2"]},
-  {"id":"holdout-exception","split":"holdout","order_id":"DEMO-005","question":"It arrived recently. Can I get my money back under the refund policy?","expected_decision":"ineligible","expected_citations":["refund-policy-v2"]},
-  {"id":"holdout-undelivered","split":"holdout","order_id":"DEMO-006","question":"Can you confirm refund eligibility for my order?","expected_decision":"needs_review","expected_citations":["refund-policy-v2"]},
-  {"id":"holdout-unknown","split":"holdout","order_id":"DEMO-999","question":"Look up this order and check its refund eligibility.","expected_decision":"needs_review","expected_citations":["refund-policy-v2"]}
- ]
+  "version": "groq-support-cases/1.1.0",
+  "label_status": "Draft synthetic labels authored from the documented policy; not independently reviewed.",
+  "cases": [
+    {
+      "id": "dev-eligible",
+      "split": "dev",
+      "order_id": "DEMO-001",
+      "question": "Can I get a refund for my order?",
+      "expected_decision": "eligible",
+      "expected_citations": [
+        "refund-policy-v2"
+      ]
+    },
+    {
+      "id": "dev-expired",
+      "split": "dev",
+      "order_id": "DEMO-002",
+      "question": "Is my delivered order still eligible for a return?",
+      "expected_decision": "ineligible",
+      "expected_citations": [
+        "refund-policy-v2"
+      ]
+    },
+    {
+      "id": "holdout-inclusive",
+      "split": "regression",
+      "order_id": "DEMO-003",
+      "question": "Please check whether I can return this purchase today.",
+      "expected_decision": "eligible",
+      "expected_citations": [
+        "refund-policy-v2"
+      ],
+      "previous_split": "holdout",
+      "promotion_reason": "Initial live run exhausted its turn budget; subsequent runs inform an orchestration fix and are no longer untouched holdout measurements."
+    },
+    {
+      "id": "holdout-outside",
+      "split": "holdout",
+      "order_id": "DEMO-004",
+      "question": "Am I still inside the refund eligibility window?",
+      "expected_decision": "ineligible",
+      "expected_citations": [
+        "refund-policy-v2"
+      ]
+    },
+    {
+      "id": "holdout-exception",
+      "split": "holdout",
+      "order_id": "DEMO-005",
+      "question": "It arrived recently. Can I get my money back under the refund policy?",
+      "expected_decision": "ineligible",
+      "expected_citations": [
+        "refund-policy-v2"
+      ]
+    },
+    {
+      "id": "holdout-undelivered",
+      "split": "holdout",
+      "order_id": "DEMO-006",
+      "question": "Can you confirm refund eligibility for my order?",
+      "expected_decision": "needs_review",
+      "expected_citations": [
+        "refund-policy-v2"
+      ]
+    },
+    {
+      "id": "holdout-unknown",
+      "split": "holdout",
+      "order_id": "DEMO-999",
+      "question": "Look up this order and check its refund eligibility.",
+      "expected_decision": "needs_review",
+      "expected_citations": [
+        "refund-policy-v2"
+      ]
+    }
+  ]
 }
